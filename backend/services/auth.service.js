@@ -1,8 +1,10 @@
 const User = require("../models/user.model");
 
 const registerUser = async (data) => {
-  const userExist = await User.find({ email: data.email });
-
+  console.log(data);
+  const userExist = await User.findOne({ email: data.email });
+  console.log('userExist',userExist);
+  
   if (userExist) {
     throw new Error("User already exists");
   }
