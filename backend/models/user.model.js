@@ -13,16 +13,15 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     role: {
-      type: String,
-      enum: ["admin", "manager", "staff"],
-      default: "staff",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
     },
     isDeleted: {
       type: Boolean,
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("User", userSchema);
