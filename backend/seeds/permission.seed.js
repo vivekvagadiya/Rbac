@@ -1,4 +1,4 @@
-import Permission from "../models/permission.model";
+import Permission from "../models/permission.model.js";
 
 const permissions = [
   { name: "user:create", module: "user", action: "create" },
