@@ -8,6 +8,8 @@ const permissions = [
 
   { name: "product:create", module: "product", action: "create" },
   { name: "product:read", module: "product", action: "read" },
+  { name: "product:update", module: "product", action: "update" },
+  { name: "product:delete", module: "product", action: "delete" },  
 ];
 
 export const seedPermissions = async () => {
