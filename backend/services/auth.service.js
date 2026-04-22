@@ -1,5 +1,7 @@
 import User from "../models/user.model.js";
+import ApiError from "../utils/ApiError.js";
 import { generateTokens } from "../utils/generateTokens.js";
+import bcrypt from "bcrypt"
 
 export const registerUser = async (data) => {
   const { email, password } = data;

@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 export const generateTokens = (user) => {
   const payload = {
     id: user._id,
-    role: user.role, // ✅ important for RBAC optimization later
+    role: user.role._id, // ✅ important for RBAC optimization later
   };
 
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
