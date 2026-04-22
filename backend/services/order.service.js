@@ -1,0 +1,163 @@
+import mongoose from "mongoose";
+import Product from "../models/product.model.js";
+import Order from "../models/order.model.js";
+import ApiError from "../utils/ApiError.js";
+
+export const createOrder = async (data, userId) => {
+  const { products } = data;
+
+  if (!products || !Array.isArray(products) || products.length === 0) {
+    throw new ApiError(400, "Products are required");
+  }
+  for (const item of products) {
+    if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
+      throw new ApiError(400, "Invalid product ID");
+    }
+    if (!item.quantity || item.quantity <= 0) {
+      throw new ApiError(400, "Invalid Quantity");
+    }
+  }
+
+  const productIds = products.map((item) => item.product);
+  const dbProducts = await Product.find({
+    _id: { $in: productIds },
+    isActive: true,
+  }).lean();
+
+  if (dbProducts.length !== products.length) {
+    throw new ApiError(400, "Some products are not found");
+  }
+
+  const productMap = new Map();
+  dbProducts.forEach((p) => productMap.set(p._id.toString(), p));
+
+  let totalAmount = 0;
+  const orderItems = products.map((item) => {
+    const prod = productMap.get(item.product.toString());
+
+    if (item.quantity > prod.stock) {
+      throw new ApiError(400, `Insufficient stock for product ${prod.name}`);
+    }
+    totalAmount += prod.price * item.quantity;
+
+    return {
+      product: prod._id,
+      quantity: item.quantity,
+      price: prod.price,
+    };
+  });
+
+  const order = await Order.create({
+    user: userId,
+    products: orderItems,
+    totalAmount,
+    createdBy: userId,
+    updatedBy: userId,
+  });
+  await Promise.all(
+    orderItems.map((item) =>
+      Product.updateOne(
+        { _id: item.product },
+        { $inc: { stock: -item.quantity } },
+      ),
+    ),
+  );
+
+  return order;
+};
+
+export const getOrders = async (query) => {
+  let { page = 1, limit = 10, status, user } = query;
+
+  // sanitize pagination
+  page = Math.max(1, parseInt(page) || 1);
+  limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
+
+  const skip = (page - 1) * limit;
+  const filter = {};
+  if (status) filter.status = status;
+  if (user && mongoose.Types.ObjectId.isValid(user)) {
+    filter.user = user;
+  }
+
+  const [orders, total] = await Promise.all([
+    Order.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .populate("user", "email name")
+      .populate("products.product", "name price")
+      .lean(),
+    Order.countDocuments(filter),
+  ]);
+  return {
+    orders,
+    total,
+    page,
+    limit,
+  };
+};
+
+export const updateOrderStatus = async (id, newStatus, userId) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid order ID");
+  }
+  if (!newStatus) {
+    throw new ApiError(400, "Status is required");
+  }
+
+  const allowedTransitions = {
+    pending: ["confirmed", "cancelled"],
+    confirmed: ["shipped", "cancelled"],
+    shipped: ["delivered"],
+    delivered: [],
+    cancelled: [],
+  };
+
+  const order = await Order.findById(id);
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+  const allowed = allowedTransitions[order.status] || [];
+
+  if (!allowed.includes(newStatus)) {
+    throw new ApiError(
+      400,
+      `Cannot change status from ${order.status} to ${newStatus}`,
+    );
+  }
+  if (order.isRefunded) {
+    throw new ApiError(400, "Cannot update refunded order");
+  }
+
+  order.status = newStatus;
+  order.updatedBy = userId;
+  await order.save();
+  return order;
+};
+
+export const refundOrder = async (id, userId) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid order ID");
+  }
+
+  const order = await Order.findById(id);
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  if (order.status !== "delivered") {
+    throw new ApiError(400, "Only delivered orders can be refunded");
+  }
+
+  if (order.isRefunded) {
+    throw new ApiError(400, "Order is already refunded");
+  }
+
+  order.isRefunded = true;
+  order.updatedBy = userId;
+  await order.save();
+  return order;
+};
