@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   
   const [loading, setLoading] = useState(true);
 
-  // 🔄 INIT (auto login on reload)
+  //  INIT (auto login on reload)
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -39,14 +39,14 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  // 🔐 LOGIN
+  //  LOGIN
   const login = async (credentials) => {
     const res = await loginApi(credentials);
 
     setUser(res.user); // already safeUser from backend
   };
 
-  // 🔓 LOGOUT
+  //  LOGOUT
   const logout = async () => {
     try {
       await logoutApi();

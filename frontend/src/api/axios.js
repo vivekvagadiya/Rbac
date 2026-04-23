@@ -42,7 +42,7 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // ============================
@@ -60,6 +60,10 @@ api.interceptors.response.use(
 
     //  Only handle 401
     if (error.response.status !== 401) {
+      return Promise.reject(error.response?.data || error);
+    }
+
+    if (originalRequest.url.includes("/auth/login")) {
       return Promise.reject(error.response?.data || error);
     }
 
@@ -98,8 +102,7 @@ api.interceptors.response.use(
         refreshToken,
       });
 
-      const { accessToken, refreshToken: newRefreshToken } =
-        response.data.data;
+      const { accessToken, refreshToken: newRefreshToken } = response.data.data;
 
       //  Save new tokens
       tokenService.setTokens({
@@ -128,7 +131,7 @@ api.interceptors.response.use(
     } finally {
       isRefreshing = false;
     }
-  }
+  },
 );
 
 export default api;
