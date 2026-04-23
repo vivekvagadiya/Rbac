@@ -1,31 +1,33 @@
-import mongoose from "mongoose";
 import Product from "../models/product.model.js";
+import ApiError from "../utils/ApiError.js";
 
 /**
  * GET PRODUCTS (Pagination)
  */
 export const getProducts = async (query) => {
-  const { page = 1, limit = 10 } = query;
+  let { page = 1, limit = 10 } = query;
 
-  const parsedPage = parseInt(page);
-  const parsedLimit = parseInt(limit);
+  page = Math.max(1, parseInt(page) || 1);
+  limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
 
-  const skip = (parsedPage - 1) * parsedLimit;
+  const skip = (page - 1) * limit;
 
   const filter = { isActive: true };
 
-  const products = await Product.find(filter)
-    .skip(skip)
-    .limit(parsedLimit)
-    .sort({ createdAt: -1 });
-
-  const total = await Product.countDocuments(filter);
+  const [products, total] = await Promise.all([
+    Product.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .lean(),
+    Product.countDocuments(filter),
+  ]);
 
   return {
     products,
     total,
-    page: parsedPage,
-    limit: parsedLimit,
+    page,
+    limit,
   };
 };
 
@@ -33,53 +35,66 @@ export const getProducts = async (query) => {
  * CREATE PRODUCT
  */
 export const createProduct = async (data, userId) => {
-  return await Product.create({
-    ...data,
-    createdBy: userId,
-  });
+  try {
+    return await Product.create({
+      ...data,
+      name: data.name.trim(),
+      stock: data.stock ?? 0,
+      createdBy: userId,
+      updatedBy: userId,
+    });
+  } catch (err) {
+    throw new ApiError(400, err.message);
+  }
 };
 
 /**
  * UPDATE PRODUCT
  */
-export const updateProduct = async (id, data) => {
-  // Validate ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new Error("Invalid product ID");
+export const updateProduct = async (id, data, userId) => {
+  if (!data || Object.keys(data).length === 0) {
+    throw new ApiError(400, "No data provided for update");
   }
 
-  // Find existing product
-  const product = await Product.findById(id);
+  const updatedProduct = await Product.findOneAndUpdate(
+    { _id: id, isActive: true },
+    {
+      $set: {
+        ...data,
+        updatedBy: userId,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).lean();
 
-  if (!product || !product.isActive) {
-    throw new Error("Product not found");
+  if (!updatedProduct) {
+    throw new ApiError(404, "Product not found");
   }
 
-  // Update fields
-  Object.assign(product, data);
-
-  // Save updated product
-  await product.save();
-
-  return product;
+  return updatedProduct;
 };
 
 /**
  * DELETE PRODUCT (Soft Delete)
  */
-export const deleteProduct = async (id) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new Error("Invalid product ID");
+export const deleteProduct = async (id, userId) => {
+  const deleted = await Product.findOneAndUpdate(
+    { _id: id, isActive: true },
+    {
+      $set: {
+        isActive: false,
+        updatedBy: userId,
+      },
+    },
+    { new: true }
+  ).lean();
+
+  if (!deleted) {
+    throw new ApiError(404, "Product not found");
   }
-
-  const product = await Product.findById(id);
-
-  if (!product || !product.isActive) {
-    throw new Error("Product not found");
-  }
-
-  product.isActive = false;
-  await product.save();
 
   return { message: "Product deleted successfully" };
 };
