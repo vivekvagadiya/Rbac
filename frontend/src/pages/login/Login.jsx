@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -11,7 +11,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 
 const Login = () => {
-  const { login } = useContext(AuthContext);
+  const { login, isAuthenticated, loading } = useContext(AuthContext);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,24 +23,35 @@ const Login = () => {
     password: "",
   });
 
-  const [loading, setLoading] = useState(false);
+  const [btnLoading, setBtnLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      await login(form);
-
-      // ✅ redirect after login
+  // ✅ Redirect AFTER auth state updates
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
       navigate(from, { replace: true });
-    } catch (err) {
-      setError(err?.message || "Login failed");
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [isAuthenticated, loading]);
+
+  const handleSubmit = async () => {
+  setBtnLoading(true);
+  setError("");
+
+  try {
+    const user = await login(form);
+    if (user) {
+      // ✅ Navigate immediately on success
+      navigate(from, { replace: true });
+    }
+  } catch (err) {
+    setError(err?.message || "Login failed");
+  } finally {
+    setBtnLoading(false);
+  }
+};
+
+  // ⏳ prevent flicker during init
+  if (loading) return null;
 
   return (
     <Box
@@ -50,19 +61,11 @@ const Login = () => {
         alignItems: "center",
         justifyContent: "center",
         px: 2,
-        bgcolor: "#f5f5f5",
+        bgcolor: "#000000",
       }}
     >
-      <Paper
-        elevation={3}
-        sx={{
-          width: "100%",
-          maxWidth: 400,
-          p: 4,
-          borderRadius: 2,
-        }}
-      >
-        <Typography variant="h5" fontWeight="bold" mb={2} textAlign="center">
+      <Paper sx={{ width: "100%", maxWidth: 400, p: 4 }}>
+        <Typography variant="h5" mb={2} textAlign="center">
           Login
         </Typography>
 
@@ -88,7 +91,7 @@ const Login = () => {
         />
 
         {error && (
-          <Typography color="error" variant="body2" mt={1}>
+          <Typography color="error" mt={1}>
             {error}
           </Typography>
         )}
@@ -96,11 +99,11 @@ const Login = () => {
         <Button
           fullWidth
           variant="contained"
-          sx={{ mt: 2, height: 45 }}
+          sx={{ mt: 2 }}
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={btnLoading}
         >
-          {loading ? <CircularProgress size={24} /> : "Login"}
+          {btnLoading ? <CircularProgress size={24} /> : "Login"}
         </Button>
       </Paper>
     </Box>
