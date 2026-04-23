@@ -1,79 +1,123 @@
-import React, { createContext, useEffect, useState } from "react";
-import { tokenService } from "../api/tokenService";
-import api from "../api/axios";
-import { loginApi, logoutApi } from "../api/authApi";
+import React, {
+  createContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 
+import { tokenService } from "../api/tokenService";
+import { loginApi, logoutApi } from "../api/authApi";
+import { getUserProfile } from "../api/user.api";
+
+// Context
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
+// Provider
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  console.log('user', user);
-
   const [loading, setLoading] = useState(true);
 
-  const fetchUserProfile = async () => {
+  /**
+   * 🔹 Fetch Logged-in User Profile
+   */
+  const fetchUserProfile = useCallback(async () => {
     try {
-      const res = await api.get("/auth/me");
-      setUser(res.data.data);
-      return res.data.data;
-    } catch (err) {
+      const res = await getUserProfile();
+
+      // ✅ Normalize response (important)
+      const userData = res?.data || res;
+
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      console.error("Fetch profile error:", error);
+
+      // ❌ Invalid token → clear session
       tokenService.clearTokens();
       setUser(null);
-      throw err;
+
+      throw error;
     }
-  };
-
-  //  INIT (auto login on reload)
-  useEffect(() => {
-    const initAuth = async () => {
-      const token = tokenService.getAccessToken();
-      if (token) {
-        try {
-          await fetchUserProfile();
-        } catch (e) { /* Error handled in fetchUserProfile */
-          console.log(e);
-
-        }
-      }
-      setLoading(false);
-    };
-    initAuth();
   }, []);
 
-  //  LOGIN
-  const login = async (credentials) => {
-    // eslint-disable-next-line no-unused-vars
-    const res = await loginApi(credentials);
-    const userData = await fetchUserProfile(); 
-    
-    return userData; // 🔥 Return this so the component can wait for it
-  };
+  /**
+   * 🔹 Initialize Auth (Auto-login on reload)
+   */
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const token = tokenService.getAccessToken();
 
-  //  LOGOUT
-  const logout = async () => {
+        if (token) {
+          await fetchUserProfile();
+        }
+      } catch (error) {
+        console.log(error);
+
+        // already handled in fetchUserProfile
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
+  }, [fetchUserProfile]);
+
+  /**
+   * 🔹 Login
+   */
+  const login = useCallback(async (credentials) => {
+    try {
+      const res = await loginApi(credentials);
+
+      // ✅ If backend returns token manually store it
+      if (res?.accessToken) {
+        tokenService.setAccessToken(res.accessToken);
+      }
+
+      const userData = await fetchUserProfile();
+      return userData;
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
+    }
+  }, [fetchUserProfile]);
+
+  /**
+   * 🔹 Logout
+   */
+  const logout = useCallback(async () => {
     try {
       await logoutApi();
-    } catch (err) {
-      console.log(err);
-      // ignore backend error
+    } catch (error) {
+      console.warn("Logout API failed:", error);
+    } finally {
+      tokenService.clearTokens();
+      setUser(null);
     }
+  }, []);
 
-    tokenService.clearTokens();
-    setUser(null);
-  };
+  /**
+   * 🔹 Derived State
+   */
+  const isAuthenticated = !!user;
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        logout,
-        isAuthenticated: !!user,
-        loading,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  /**
+   * 🔹 Memoized Context Value (VERY IMPORTANT)
+   */
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      isAuthenticated,
+      login,
+      logout,
+      refetchUser: fetchUserProfile, // useful for RBAC refresh
+    }),
+    [user, loading, isAuthenticated, login, logout, fetchUserProfile]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
