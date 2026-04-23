@@ -1,21 +1,17 @@
-import mongoose from "mongoose";
 import User from "../models/user.model.js";
+import ApiError from "../utils/ApiError.js";
 
 export const checkPermission = (requiredPermission) => {
   return async (req, res, next) => {
     try {
-      const userId = req.headers["x-user-id"];
+      const userId = req.user?._id;
 
-      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-        return res.status(401).json({ message: "Invalid or missing user id" });
+      if (!userId) {
+        throw new ApiError(401, "Unauthorized");
       }
 
-      // Attach user early
-      req.user = { _id: userId };
-
-      // Fetch only required fields (OPTIMIZED)
       const user = await User.findById(userId)
-        .select("role")
+        .select("role isBlocked isDeleted")
         .populate({
           path: "role",
           select: "permissions",
@@ -26,24 +22,26 @@ export const checkPermission = (requiredPermission) => {
         })
         .lean();
 
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+      if (!user || user.isDeleted) {
+        throw new ApiError(404, "User not found");
+      }
+
+      if (user.isBlocked) {
+        throw new ApiError(403, "User is blocked");
       }
 
       if (!user.role || !user.role.permissions) {
-        return res.status(403).json({ message: "No permissions assigned" });
+        throw new ApiError(403, "No permissions assigned");
       }
 
-      // Convert to Set (O(1) lookup)
       const permissionSet = new Set(
         user.role.permissions.map((p) => p.name)
       );
 
       if (!permissionSet.has(requiredPermission)) {
-        return res.status(403).json({ message: "Forbidden" });
+        throw new ApiError(403, "Forbidden");
       }
 
-      // Attach permissions for downstream use (optional)
       req.permissions = permissionSet;
 
       next();

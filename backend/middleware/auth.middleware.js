@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 
-export const authenticate = (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -13,9 +14,19 @@ export const authenticate = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    const user = await User.findById(decoded.id).select("_id role isBlocked isDeleted");
+
+    if (!user || user.isDeleted) {
+      throw new ApiError(401, "User not found");
+    }
+
+    if (user.isBlocked) {
+      throw new ApiError(403, "User is blocked");
+    }
+
     req.user = {
-      _id: decoded.id,
-      role: decoded.role,
+      _id: user._id,
+      role: user.role,
     };
 
     next();
