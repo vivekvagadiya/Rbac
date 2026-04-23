@@ -26,9 +26,41 @@ export const login = async (req, res, next) => {
     };
     res.status(200).json({
       success: true,
-      user:safeUser,
-      accessToken,
-      refreshToken,
+      data: {
+        user: safeUser,
+        accessToken,
+        refreshToken,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const refreshToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    const tokens = await authService.refreshUserToken(refreshToken);
+    res.status(200).json({
+      success: true,
+      data: {
+        ...tokens,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const logout = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    await authService.logoutUser(userId);
+    res.status(200).json({
+      success: true,
+      data: {
+        message: "Logged out successfully",
+      },
     });
   } catch (error) {
     next(error);

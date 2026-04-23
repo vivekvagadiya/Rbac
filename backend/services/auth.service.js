@@ -1,7 +1,7 @@
 import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import { generateTokens } from "../utils/generateTokens.js";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
 
 export const registerUser = async (data) => {
   const { email, password } = data;
@@ -48,8 +48,8 @@ export const loginUser = async (email, password) => {
   if (!isMatch) {
     throw new ApiError(401, "Invalid credentials");
   }
-
   const tokens = generateTokens(user);
+  user.refreshToken = tokens.refreshToken;
 
   const safeUser = {
     _id: user._id,
@@ -58,4 +58,52 @@ export const loginUser = async (email, password) => {
   };
 
   return { user: safeUser, ...tokens };
+};
+
+export const refreshUserToken = async (refreshToken) => {
+  if (!refreshToken) {
+    throw new ApiError(401, "Refresh token required");
+  }
+
+  let decoded;
+
+  try {
+    decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+  } catch {
+    throw new ApiError(403, "Invalid refresh token");
+  }
+
+  const user = await User.findById(decoded.id);
+
+  if (!user || user.isDeleted) {
+    throw new ApiError(403, "User not found");
+  }
+
+  if (user.isBlocked) {
+    throw new ApiError(403, "User is blocked");
+  }
+
+  // ✅ MATCH with DB (VERY IMPORTANT)
+  if (user.refreshToken !== refreshToken) {
+    throw new ApiError(403, "Refresh token mismatch");
+  }
+
+  // 🔁 ROTATE tokens
+  const tokens = generateTokens(user);
+
+  user.refreshToken = tokens.refreshToken;
+  await user.save();
+
+  return tokens;
+};
+
+export const logoutUser = async (userId) => {
+  const user = await User.findById(userId);
+
+  if (user) {
+    user.refreshToken = null;
+    await user.save();
+  }
+
+  return { message: "Logged out successfully" };
 };
