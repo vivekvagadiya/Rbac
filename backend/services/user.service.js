@@ -2,7 +2,6 @@ import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
 import ApiError from "../utils/ApiError.js";
 
-
 //  Create User (Admin side)
 export const createUser = async (data) => {
   const { email } = data;
@@ -15,7 +14,6 @@ export const createUser = async (data) => {
   const user = await User.create(data);
   return user;
 };
-
 
 //  Get All Users (with pagination + filtering)
 export const getUsers = async ({ page = 1, limit = 10 }) => {
@@ -39,14 +37,12 @@ export const getUsers = async ({ page = 1, limit = 10 }) => {
   };
 };
 
-
 //  Get Single User
 export const getUserById = async (userId) => {
-  const user = await User.findOne({ _id: userId, isDeleted: false })
-    .populate({
-      path: "role",
-      populate: { path: "permissions" },
-    });
+  const user = await User.findOne({ _id: userId, isDeleted: false }).populate({
+    path: "role",
+    populate: { path: "permissions" },
+  });
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -54,14 +50,13 @@ export const getUserById = async (userId) => {
 
   return user;
 };
-
 
 //  Update User
 export const updateUser = async (userId, data) => {
   const user = await User.findOneAndUpdate(
     { _id: userId, isDeleted: false },
     data,
-    { new: true }
+    { new: true },
   );
 
   if (!user) {
@@ -70,14 +65,13 @@ export const updateUser = async (userId, data) => {
 
   return user;
 };
-
 
 //  Soft Delete User
 export const deleteUser = async (userId) => {
   const user = await User.findByIdAndUpdate(
     userId,
     { isDeleted: true },
-    { new: true }
+    { new: true },
   );
 
   if (!user) {
@@ -86,7 +80,6 @@ export const deleteUser = async (userId) => {
 
   return user;
 };
-
 
 //  Assign Role to User
 export const assignRoleToUser = async (userId, roleId) => {
@@ -98,7 +91,7 @@ export const assignRoleToUser = async (userId, roleId) => {
   const user = await User.findOneAndUpdate(
     { _id: userId, isDeleted: false },
     { role: roleId },
-    { new: true }
+    { new: true },
   ).populate("role");
 
   if (!user) {
@@ -108,13 +101,12 @@ export const assignRoleToUser = async (userId, roleId) => {
   return user;
 };
 
-
 //  Block / Unblock User
 export const toggleBlockUser = async (userId, isBlocked) => {
   const user = await User.findOneAndUpdate(
     { _id: userId, isDeleted: false },
     { isBlocked },
-    { new: true }
+    { new: true },
   );
 
   if (!user) {

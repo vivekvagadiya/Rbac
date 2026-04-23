@@ -107,3 +107,16 @@ export const logoutUser = async (userId) => {
 
   return { message: "Logged out successfully" };
 };
+
+export const getUserData = async (userId) => {
+  const user = await User.findOne({ _id: userId, isDeleted: false }).populate({
+    path: "role",
+    populate: { path: "permissions" },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return user;
+};
