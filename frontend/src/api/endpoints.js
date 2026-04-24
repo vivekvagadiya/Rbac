@@ -8,5 +8,6 @@ export const endpoints={
     },
     user:{
         profile:`${baseUrl}/auth/profile`,
+        users:`${baseUrl}/users`,
     }
 }

@@ -9,3 +9,12 @@ export const getUserProfile = async () => {
     throw new Error(error?.response?.data || "failed");
   }
 };
+
+export const getAllUsers = async () => {
+  try {
+    const response = await api.get(endpoints.user.users);
+    return response.data;
+  } catch (error) {
+    throw new Error(error?.response?.data || "failed");
+  }
+};

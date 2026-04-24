@@ -1,7 +1,6 @@
-// src/components/Sidebar.jsx
-
 import {
   Box,
+  Drawer,
   List,
   ListItemButton,
   ListItemText,
@@ -16,50 +15,75 @@ const menuItems = [
   { label: "Orders", path: "/orders" },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  return (
-    <Box
-      sx={{
-        width: 240,
-        height: "100vh",
-        bgcolor: "#0f172a",
-        color: "#fff",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Logo / Title */}
-      <Box sx={{ p: 2, borderBottom: "1px solid #1e293b" }}>
-        <Typography variant="h6" fontWeight="bold">
+  const drawerContent = (
+    <Box sx={{ height: "100%", bgcolor: "#0f172a", color: "#fff" }}>
+      <Box sx={{ p: 2.5, borderBottom: "1px solid #1e293b" }}>
+        <Typography variant="h6" fontWeight="bold" color="#38bdf8">
           Admin Panel
         </Typography>
       </Box>
 
-      {/* Menu */}
-      <List>
+      <List sx={{ px: 1, mt: 1 }}>
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
-
           return (
             <ListItemButton
               key={item.path}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                navigate(item.path);
+                if (mobileOpen) handleDrawerToggle();
+              }}
               sx={{
-                color: isActive ? "#38bdf8" : "#cbd5f5",
-                bgcolor: isActive ? "#1e293b" : "transparent",
-                "&:hover": {
-                  bgcolor: "#1e293b",
-                },
+                borderRadius: "8px",
+                mb: 0.5,
+                color: isActive ? "#38bdf8" : "#cbd5e1",
+                bgcolor: isActive ? "rgba(56, 189, 248, 0.1)" : "transparent",
+                "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
               }}
             >
-              <ListItemText primary={item.label} />
+              <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: isActive ? 600 : 400 }} />
             </ListItemButton>
           );
         })}
       </List>
+    </Box>
+  );
+
+  return (
+    <Box component="nav">
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": { width: drawerWidth, borderRight: "none" },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+
+      {/* Desktop Drawer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: "none", md: "block" },
+          "& .MuiDrawer-paper": { 
+            width: drawerWidth, 
+            boxSizing: "border-box",
+            borderRight: "1px solid #1e293b" 
+          },
+        }}
+        open
+      >
+        {drawerContent}
+      </Drawer>
     </Box>
   );
 };

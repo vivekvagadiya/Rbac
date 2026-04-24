@@ -7,6 +7,7 @@ import Login from "./pages/login/Login";
 import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/dashboard/Dashboard";
 import ProtectedRoute from "./routes/ProtectedRoutes";
+import UserPage from "./pages/User/User";
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
           }
         >
           <Route index element={<Dashboard />} />
+          <Route path="/users" element={<UserPage />} />
         </Route>
 
       </Routes>

@@ -1,23 +1,51 @@
-// layouts/MainLayout.jsx
-
 import { Box } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
+import { useState } from "react";
+
+const drawerWidth = 240;
 
 const MainLayout = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   return (
-    <Box sx={{ display: "flex",backgroundColor:"#000000",height:"100vh" }}>
-      <Box sx={{ width: 240, bgcolor: "#1e293b", color: "#fff" }}>
-        <Sidebar/>
-      </Box>
+    <Box sx={{ display: "flex", minHeight: "100vh",minWidth:"100vw", bgcolor: "#09090b" }}>
+      {/* Sidebar - Passing state for mobile control */}
+      <Sidebar 
+        drawerWidth={drawerWidth} 
+        mobileOpen={mobileOpen} 
+        handleDrawerToggle={handleDrawerToggle} 
+      />
 
-      <Box sx={{ flex: 1 }}>
-        <Box sx={{ height: 60, borderBottom: "1px solid #ddd" }}>
-          <Header/>
-        </Box>
+      {/* Main Wrapper */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+          // This margin ensures content starts after the permanent drawer on desktop
+          ml: { md: `${drawerWidth}px` }, 
+        }}
+      >
+        {/* Header - Passing toggle for mobile hamburger */}
+        <Header handleDrawerToggle={handleDrawerToggle} />
 
-        <Box sx={{ p: 0,backgroundColor:"#000000" }}>
+        {/* Page Content */}
+        <Box
+          sx={{
+            flexGrow: 1,
+            p: { xs: 2, md: 3 },
+            color: "#fff",
+            overflow: "auto",
+          }}
+        >
           <Outlet />
         </Box>
       </Box>
