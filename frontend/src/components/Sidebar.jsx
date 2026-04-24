@@ -7,17 +7,40 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
+import usePermission from "../hooks/permission.hook";
 
 const menuItems = [
-  { label: "Dashboard", path: "/" },
-  { label: "Users", path: "/users" },
-  { label: "Products", path: "/products" },
-  { label: "Orders", path: "/orders" },
+  {
+    label: "Dashboard",
+    path: "/",
+    module: null,
+  },
+  {
+    label: "Users",
+    path: "/users",
+    module: "user",
+  },
+  {
+    label: "Products",
+    path: "/products",
+    module: "product",
+  },
+  {
+    label: "Orders",
+    path: "/orders",
+    module: "order",
+  },
 ];
 
 const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const {hasModuleAccess}=usePermission();
+
+  const filterMenu=menuItems.filter((item)=>{
+    if(!item.module) return true;
+    return hasModuleAccess(item.module)
+  })
 
   const drawerContent = (
     <Box sx={{ height: "100%", bgcolor: "#0f172a", color: "#fff" }}>
@@ -28,7 +51,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
       </Box>
 
       <List sx={{ px: 1, mt: 1 }}>
-        {menuItems.map((item) => {
+        {filterMenu.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <ListItemButton
@@ -39,7 +62,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
               }}
               sx={{
                 borderRadius: "8px",
-                mb: 0.5,
+                mb: 1,
                 color: isActive ? "#38bdf8" : "#cbd5e1",
                 bgcolor: isActive ? "rgba(56, 189, 248, 0.1)" : "transparent",
                 "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
@@ -74,10 +97,10 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
         variant="permanent"
         sx={{
           display: { xs: "none", md: "block" },
-          "& .MuiDrawer-paper": { 
-            width: drawerWidth, 
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
             boxSizing: "border-box",
-            borderRight: "1px solid #1e293b" 
+            borderRight: "1px solid #1e293b"
           },
         }}
         open

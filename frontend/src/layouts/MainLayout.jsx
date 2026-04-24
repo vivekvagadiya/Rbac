@@ -14,7 +14,7 @@ const MainLayout = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh",minWidth:"100vw", bgcolor: "#09090b" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh",minWidth:"100%", bgcolor: "#09090b" }}>
       {/* Sidebar - Passing state for mobile control */}
       <Sidebar 
         drawerWidth={drawerWidth} 

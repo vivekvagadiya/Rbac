@@ -8,10 +8,6 @@ const UserPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-
-    /**
-     * 🔹 Fetch Users (stable function)
-     */
     const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
@@ -34,10 +30,8 @@ const UserPage = () => {
         }
     }, []);
 
-    /**
-     * 🔹 Initial Load
-     */
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchUsers();
     }, [fetchUsers]);
 
