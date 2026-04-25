@@ -4,15 +4,35 @@ import ApiError from "../utils/ApiError.js";
 /**
  * GET PRODUCTS (Pagination)
  */
+
 export const getProducts = async (query) => {
-  let { page = 1, limit = 10 } = query;
+  let { page = 1, limit = 10, search, isActive, category } = query;
 
   page = Math.max(1, parseInt(page) || 1);
   limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
 
   const skip = (page - 1) * limit;
 
-  const filter = { isActive: true };
+  const filter = {};
+
+  // 🔍 Search
+  if (search?.trim()) {
+    const regex = new RegExp(search.trim(), "i");
+    filter.$or = [
+      { name: regex },
+      { description: regex },
+    ];
+  }
+
+  // 📦 Category
+  if (category) {
+    filter.category = category;
+  }
+
+  // 🔄 Status (BOOLEAN ONLY)
+ if(isActive ){
+  filter.isActive=isActive
+ }
 
   const [products, total] = await Promise.all([
     Product.find(filter)
@@ -20,6 +40,7 @@ export const getProducts = async (query) => {
       .limit(limit)
       .sort({ createdAt: -1 })
       .lean(),
+
     Product.countDocuments(filter),
   ]);
 
@@ -67,7 +88,7 @@ export const updateProduct = async (id, data, userId) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   ).lean();
 
   if (!updatedProduct) {
@@ -89,7 +110,7 @@ export const deleteProduct = async (id, userId) => {
         updatedBy: userId,
       },
     },
-    { new: true }
+    { new: true },
   ).lean();
 
   if (!deleted) {
