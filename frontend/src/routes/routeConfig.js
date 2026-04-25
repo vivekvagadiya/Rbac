@@ -1,4 +1,5 @@
 import { lazy } from "react";
+import PermissionPage from "../pages/Permission/Index";
 
 const Login = lazy(() => import("../pages/login/Login"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
@@ -30,6 +31,10 @@ export const routes = [
         path: "users",
         element: UserPage,
         permission: "user:read",
+      },
+      {
+        path: "permission",
+        element: PermissionPage,
       },
     ],
   },

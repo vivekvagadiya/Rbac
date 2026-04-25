@@ -5,6 +5,10 @@ const permissions = [
   { name: "user:read", module: "user", action: "read" },
   { name: "user:update", module: "user", action: "update" },
   { name: "user:delete", module: "user", action: "delete" },
+  { name: "permission:create", module: "permission", action: "create" },
+  { name: "permission:read", module: "permission", action: "read" },
+  { name: "permission:update", module: "permission", action: "update" },
+  { name: "permission:delete", module: "permission", action: "delete" },
 
   { name: "product:create", module: "product", action: "create" },
   { name: "product:read", module: "product", action: "read" },

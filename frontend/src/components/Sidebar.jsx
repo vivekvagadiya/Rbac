@@ -16,6 +16,11 @@ const menuItems = [
     module: null,
   },
   {
+    label: "Permission",
+    path: "/permission",
+    module: "permission",
+  },
+  {
     label: "Users",
     path: "/users",
     module: "user",

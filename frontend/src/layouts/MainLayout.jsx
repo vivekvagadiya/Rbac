@@ -17,7 +17,6 @@ const MainLayout = () => {
     <Box
       sx={{
         flexGrow: 1,
-        color: "#fff",
         overflowX: "auto",   // ✅ allow horizontal scroll
         overflowY: "auto",   // ✅ vertical scroll
       }}
@@ -48,7 +47,6 @@ const MainLayout = () => {
         <Box
           sx={{
             flexGrow: 1,
-            color: "#fff",
             overflow: "auto",
           }}
         >
