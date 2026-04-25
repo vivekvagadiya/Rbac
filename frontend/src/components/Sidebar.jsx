@@ -40,10 +40,10 @@ const menuItems = [
 const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const {hasModuleAccess}=usePermission();
+  const { hasModuleAccess } = usePermission();
 
-  const filterMenu=menuItems.filter((item)=>{
-    if(!item.module) return true;
+  const filterMenu = menuItems.filter((item) => {
+    if (!item.module) return true;
     return hasModuleAccess(item.module)
   })
 
@@ -73,7 +73,14 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
                 "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
               }}
             >
-              <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: isActive ? 600 : 400 }} />
+              <ListItemText
+                primary={item.label}
+                primaryTypographyProps={{
+                  sx: {
+                    fontWeight: isActive ? 700 : 400,
+                  },
+                }}
+              />
             </ListItemButton>
           );
         })}
