@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useState } from "react";
-import AddPermissionModal from "./components/AddPermissionModal";
+// import AddPermissionModal from "./components/AddPermissionModal";
 
 const PageContainer = styled(Box)(({ theme }) => ({
     padding: theme.spacing(3),
@@ -197,14 +197,14 @@ const PermissionPage = () => {
                     </Grid>
                 ))}
             </Grid>
-            <AddPermissionModal
+            {/* <AddPermissionModal
                 open={open}
                 onClose={() => setOpen(false)}
                 onSubmit={(data) => {
                     console.log("Payload:", data);
                     // 👉 call API here
                 }}
-            />
+            /> */}
 
         </PageContainer>
     );

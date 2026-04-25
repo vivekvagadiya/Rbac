@@ -1,5 +1,6 @@
 import { lazy } from "react";
 import PermissionPage from "../pages/Permission/Index";
+import ProductPage from "../pages/Product/ProductPage";
 
 const Login = lazy(() => import("../pages/login/Login"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
@@ -35,6 +36,10 @@ export const routes = [
       {
         path: "permission",
         element: PermissionPage,
+      },
+      {
+        path: "products",
+        element: ProductPage,
       },
     ],
   },
