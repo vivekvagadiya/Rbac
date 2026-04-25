@@ -14,12 +14,19 @@ const MainLayout = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh",minWidth:"100%", bgcolor: "#09090b" }}>
+    <Box
+      sx={{
+        flexGrow: 1,
+        color: "#fff",
+        overflowX: "auto",   // ✅ allow horizontal scroll
+        overflowY: "auto",   // ✅ vertical scroll
+      }}
+    >
       {/* Sidebar - Passing state for mobile control */}
-      <Sidebar 
-        drawerWidth={drawerWidth} 
-        mobileOpen={mobileOpen} 
-        handleDrawerToggle={handleDrawerToggle} 
+      <Sidebar
+        drawerWidth={drawerWidth}
+        mobileOpen={mobileOpen}
+        handleDrawerToggle={handleDrawerToggle}
       />
 
       {/* Main Wrapper */}
@@ -31,7 +38,7 @@ const MainLayout = () => {
           flexDirection: "column",
           width: { md: `calc(100% - ${drawerWidth}px)` },
           // This margin ensures content starts after the permanent drawer on desktop
-          ml: { md: `${drawerWidth}px` }, 
+          ml: { md: `${drawerWidth}px` },
         }}
       >
         {/* Header - Passing toggle for mobile hamburger */}
@@ -41,7 +48,6 @@ const MainLayout = () => {
         <Box
           sx={{
             flexGrow: 1,
-            p: { xs: 2, md: 3 },
             color: "#fff",
             overflow: "auto",
           }}

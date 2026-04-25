@@ -23,7 +23,7 @@ const Header = ({ handleDrawerToggle }) => {
         justifyContent: "space-between",
         alignItems: "center",
         px: 2,
-        bgcolor: "#09090b",
+        bgcolor: "#0f172a",
         borderBottom: "1px solid #1e293b",
         position: "sticky",
         top: 0,
