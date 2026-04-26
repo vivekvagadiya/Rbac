@@ -3,135 +3,211 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Button,
+  Typography,
+  Box,
   Grid,
-  MenuItem,
-  Switch,
-  FormControlLabel,
+  Divider,
+  IconButton,
+  CircularProgress,
+  Stack,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { 
+  Close as CloseIcon, 
+  Inventory as InventoryIcon, 
+  Info as InfoIcon, 
+  Description as DescriptionIcon 
+} from "@mui/icons-material";
+import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 
-const categories = ["Electronics", "Clothing", "Food"];
+import { productSchema } from "./helper";
+import FormInput from "../../../components/form/FormInput";
+import FormSelect from "../../../components/form/FormSelect";
+import FormSwitch from "../../../components/form/FormSwitch";
+
+const categories = [
+  { label: "Electronics", value: "electronics" },
+  { label: "Clothing", value: "clothing" },
+  { label: "Food", value: "food" },
+  { label: "Book", value: "books" },
+  { label: "Accessories", value: "accessories" },
+];
+
+const defaultValues = {
+  name: "",
+  price: "",
+  category: "",
+  stock: "",
+  description: "",
+  isActive: true,
+};
 
 const ProductFormModal = ({ open, onClose, editData }) => {
-  const [form, setForm] = useState({
-    name: "",
-    price: "",
-    category: "",
-    stock: "",
-    description: "",
-    isActive: true,
+  const isEdit = useMemo(() => !!editData?._id, [editData]);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting, isDirty, isValid },
+  } = useForm({
+    resolver: yupResolver(productSchema),
+    defaultValues,
+    mode: "onChange",
   });
 
   useEffect(() => {
-    if (editData) {
-      setForm(editData);
+    if (open) {
+      reset(editData ? { ...defaultValues, ...editData } : defaultValues);
     }
-  }, [editData]);
+  }, [editData, open, reset]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = () => {
-    console.log(form);
+  const handleClose = () => {
+    reset(defaultValues);
     onClose();
   };
 
+  const onSubmit = async (data) => {
+    try {
+      if (isEdit) {
+        console.log("UPDATE:", data);
+      } else {
+        console.log("CREATE:", data);
+      }
+      handleClose();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
-      <DialogTitle>
-        {editData ? "Edit Product" : "Add Product"}
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: { 
+          borderRadius: 4, 
+          backgroundImage: 'none', // Prevents gray tint in dark mode
+        },
+      }}
+    >
+      {/* HEADER */}
+      <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h5" fontWeight={700}>
+          {isEdit ? "Edit Product" : "New Product"}
+        </Typography>
+        <IconButton onClick={handleClose} size="small" sx={{ color: 'text.secondary' }}>
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
 
-      <DialogContent>
-        <Grid container spacing={2} mt={1}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Product Name"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-            />
-          </Grid>
+      <DialogContent dividers sx={{ borderBottom: 'none', px: 4, py: 3   }}>
+        <Stack spacing={4}>
+          
+          {/* SECTION 1: BASIC INFO */}
+          <Box>
+            <Stack direction="row" spacing={1} sx={{alignItems:"center"}} mb={2}>
+              <InfoIcon fontSize="small" color="primary" />
+              <Typography variant="overline" fontWeight={700} letterSpacing={1.2}>
+                Basic Information
+              </Typography>
+            </Stack>
+            
+            <Grid container spacing={3}>
+              <Grid item size={{xs:12}}>
+                <FormInput name="name" label="Product Name" control={control} fullWidth />
+              </Grid>
+              <Grid item size={{xs:12,sm:6}}>
+                <FormInput name="price" label="Price" type="number" control={control} fullWidth />
+              </Grid>
+              <Grid item size={{xs:12,sm:6}}>
+                <FormSelect
+                  name="category"
+                  label="Category"
+                  control={control}
+                  options={categories}
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
+          </Box>
 
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Price"
-              name="price"
-              type="number"
-              value={form.price}
-              onChange={handleChange}
-            />
-          </Grid>
+          {/* SECTION 2: INVENTORY */}
+          <Box p={2.5} sx={{ borderRadius: 3 }}>
+            <Stack direction="row" spacing={1} sx={{alignItems:"center"}} mb={2}>
+              <InventoryIcon fontSize="small" color="primary" />
+              <Typography variant="overline" fontWeight={700} letterSpacing={1.2}>
+                Inventory & Status
+              </Typography>
+            </Stack>
+            
+            <Grid container spacing={3} sx={{alignItems:'center'}}>
+              <Grid item size={{xs:12,sm:6}}>
+                <FormInput name="stock" label="Stock Quantity" type="number" control={control} fullWidth />
+              </Grid>
+              <Grid item size={{xs:12,sm:6}}>
+                <Box sx={{ ml: 1 }}>
+                   <FormSwitch name="isActive" label="Available for sale" control={control} />
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
 
-          <Grid item xs={6}>
-            <TextField
-              select
-              fullWidth
-              label="Category"
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-            >
-              {categories.map((cat) => (
-                <MenuItem key={cat} value={cat}>
-                  {cat}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Stock"
-              name="stock"
-              type="number"
-              value={form.stock}
-              onChange={handleChange}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Description"
+          {/* SECTION 3: DESCRIPTION */}
+          <Box>
+            <Stack direction="row" spacing={1} sx={{alignItems:'center'}} mb={2}>
+              <DescriptionIcon fontSize="small" color="primary" />
+              <Typography variant="overline" fontWeight={700} letterSpacing={1.2}>
+                Description
+              </Typography>
+            </Stack>
+            <FormInput
               name="description"
+              label="Tell us about the product..."
               multiline
               rows={3}
-              value={form.description}
-              onChange={handleChange}
+              control={control}
+              fullWidth
             />
-          </Grid>
-
-          <Grid item xs={12}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={form.isActive}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      isActive: e.target.checked,
-                    }))
-                  }
-                />
-              }
-              label="Active"
-            />
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSubmit}>
-          {editData ? "Update" : "Create"}
+      <DialogActions sx={{ p: 3, gap: 1 }}>
+        <Button 
+          onClick={handleClose} 
+          color="inherit" 
+          variant="text" 
+          sx={{ fontWeight: 600 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting || !isValid || !isDirty}
+          elevation={0}
+          sx={{ 
+            borderRadius: 2, 
+            px: 4, 
+            py: 1,
+            textTransform: 'none',
+            fontWeight: 700,
+            boxShadow: 'none',
+            '&:hover': { boxShadow: '0px 4px 12px rgba(0,0,0,0.1)' }
+          }}
+        >
+          {isSubmitting ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : isEdit ? (
+            "Save Changes"
+          ) : (
+            "Create Product"
+          )}
         </Button>
       </DialogActions>
     </Dialog>
