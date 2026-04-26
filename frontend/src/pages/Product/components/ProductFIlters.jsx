@@ -7,8 +7,11 @@ const ProductFilters = ({ filter, setFilter }) => {
 
             <TextField select label="Category" size="small" sx={{ minWidth: 150 }} value={filter.category} onChange={(e) => setFilter((prev) => ({ ...prev, category: e.target.value }))}>
                 <MenuItem value="all">All</MenuItem>
-                <MenuItem value="Electronics">Electronics</MenuItem>
-                <MenuItem value="Clothing">Clothing</MenuItem>
+                <MenuItem value="electronics">Electronics</MenuItem>
+                <MenuItem value="clothing">Clothing</MenuItem>
+                <MenuItem value="books">Books</MenuItem>
+                <MenuItem value="food">Food</MenuItem>
+                <MenuItem value="accessories">Accessories</MenuItem>
             </TextField>
 
             <TextField select label="Status" size="small" sx={{ minWidth: 150 }}
