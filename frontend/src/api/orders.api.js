@@ -31,3 +31,13 @@ export const updateOrderStatus = async (id, status) => {
     return error?.message;
   }
 };
+export const refundOrder = async (id) => {
+  try {
+    const response = await api.post(
+      endpoints.orders.updateRefund.replace(":id", id),
+    );
+    return response?.data;
+  } catch (error) {
+    return error?.message;
+  }
+};
