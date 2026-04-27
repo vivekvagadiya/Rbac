@@ -72,11 +72,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await loginApi(credentials);
 
-      // ✅ If backend returns token manually store it
-      if (res?.accessToken) {
-        tokenService.setAccessToken(res.accessToken);
-      }
-
       const userData = await fetchUserProfile();
       return userData;
     } catch (error) {
@@ -94,7 +89,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.warn("Logout API failed:", error);
     } finally {
-      tokenService.clearTokens();
       setUser(null);
     }
   }, []);

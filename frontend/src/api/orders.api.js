@@ -19,3 +19,15 @@ export const getOrderById = async (id) => {
     return error?.message;
   }
 };
+
+export const updateOrderStatus = async (id, status) => {
+  try {
+    const response = await api.put(
+      endpoints.orders.updateStatus.replace(":id", id),
+      { status },
+    );
+    return response?.data;
+  } catch (error) {
+    return error?.message;
+  }
+};

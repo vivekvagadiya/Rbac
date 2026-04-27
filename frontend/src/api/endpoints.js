@@ -19,5 +19,6 @@ export const endpoints = {
   orders: {
     getOrders: `${baseUrl}/orders`,
     getOrderById: `${baseUrl}/orders/:id`,
+    updateStatus: `${baseUrl}/orders/:id/status`
   },
 };
