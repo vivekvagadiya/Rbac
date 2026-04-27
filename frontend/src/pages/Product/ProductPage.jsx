@@ -5,11 +5,13 @@ import ProductTable from "./components/ProductTable";
 import ProductFormModal from "./components/ProductFormModal";
 import toast from "react-hot-toast";
 import { getProducts } from "../../api/product.api";
+import ProductDeleteModal from "./components/ProductDeleteModal";
 
 const ProductPage = () => {
     const [products, setProducts] = useState([]);
     const [openModal, setOpenModal] = useState(false);
     const [editData, setEditData] = useState(null);
+    const [delOpen, setDelOpen] = useState(false)
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -34,12 +36,12 @@ const ProductPage = () => {
         return () => clearTimeout(timer);
     }, [filter.search]);
 
-    // 🔁 Reset page ONLY when filters change (not page itself)
+    // Reset page ONLY when filters change (not page itself)
     useEffect(() => {
         setPage(0);
     }, [debouncedSearch, filter.category, filter.status]);
 
-    // 🧠 Build query (stable)
+    //  Build query (stable)
     const buildQuery = () => {
         const query = {
             page: page + 1,
@@ -63,7 +65,7 @@ const ProductPage = () => {
         return query;
     };
 
-    // 🚀 Fetch products (race-safe)
+    //  Fetch products (race-safe)
     const fetchProducts = async () => {
 
         setLoading(true);
@@ -80,12 +82,12 @@ const ProductPage = () => {
         }
     };
 
-    // 📡 Fetch trigger
+    //  Fetch trigger
     useEffect(() => {
         fetchProducts();
     }, [page, rowsPerPage, debouncedSearch, filter.category, filter.status]);
 
-    // 📄 Pagination handlers
+    //  Pagination handlers
     const handleChangePage = (_, newPage) => {
         setPage(newPage);
     };
@@ -95,7 +97,7 @@ const ProductPage = () => {
         setPage(0);
     };
 
-    // ➕ Add / Edit
+    //  Add / Edit
     const handleAdd = () => {
         setEditData(null);
         setOpenModal(true);
@@ -106,12 +108,17 @@ const ProductPage = () => {
         setOpenModal(true);
     };
 
+    const handleDelete = (row) => {
+        setEditData(row);
+        setDelOpen(true)
+    }
+
     return (
         <Box sx={{ p: 3 }}>
             {/* Header */}
             <Stack
                 direction="row"
-                sx={{ mb: 2, justifyContent: "space-between" ,alignItems:'center'}}
+                sx={{ mb: 2, justifyContent: "space-between", alignItems: 'center' }}
             >
                 <Typography variant="h5">Products</Typography>
 
@@ -128,6 +135,7 @@ const ProductPage = () => {
                 products={products}
                 loading={loading}
                 onEdit={handleEdit}
+                onDelete={handleDelete}
                 page={page}
                 rowsPerPage={rowsPerPage}
                 total={total}
@@ -141,6 +149,12 @@ const ProductPage = () => {
                 onClose={() => setOpenModal(false)}
                 onSuccess={() => fetchProducts()}
                 editData={editData}
+            />
+            <ProductDeleteModal
+                open={delOpen}
+                onClose={() => setDelOpen(false)}
+                product={editData}
+                onSuccess={fetchProducts}
             />
         </Box>
     );

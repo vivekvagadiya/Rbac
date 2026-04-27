@@ -18,6 +18,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 const ProductTable = ({
     onEdit,
+    onDelete,
     products = [],
     page,
     handleChangePage,
@@ -93,7 +94,7 @@ const ProductTable = ({
                                             <EditIcon fontSize="small" />
                                         </IconButton>
 
-                                        <IconButton size="small">
+                                        <IconButton size="small" onClick={() => onDelete(row)}>
                                             <DeleteIcon color="error" fontSize="small" />
                                         </IconButton>
                                     </TableCell>

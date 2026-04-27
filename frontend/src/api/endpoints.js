@@ -13,6 +13,7 @@ export const endpoints={
     product:{
         getProduct:`${baseUrl}/products`,
         createProduct:`${baseUrl}/products`,
-        updateProduct:`${baseUrl}/products`
+        updateProduct:`${baseUrl}/products`,
+        deleteProduct:`${baseUrl}/products`,
     }
 }
