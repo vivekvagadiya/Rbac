@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const { seedPermissions } = require("./seeds/permission.seed");
+const seedOrders = require("./seeds/order.seed");
 const errorHandler = require("./middleware/error.middleware").default;
 
 const app = express();
@@ -20,6 +21,7 @@ app.use("/api/products", require("./routes/product.route"));
 app.use("/api/users", require("./routes/user.route"));
 app.use("/api/orders", require("./routes/order.route"));
 // seedPermissions()
+// seedOrders()
 app.use(errorHandler);
 
 module.exports = app;

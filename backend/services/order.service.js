@@ -67,32 +67,89 @@ export const createOrder = async (data, userId) => {
 };
 
 export const getOrders = async (query) => {
-  let { page = 1, limit = 10, status, user } = query;
+  let { page = 1, limit = 10, status, user, search } = query;
 
-  // sanitize pagination
   page = Math.max(1, parseInt(page) || 1);
   limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
 
   const skip = (page - 1) * limit;
-  const filter = {};
-  if (status) filter.status = status;
+
+  const match = {};
+
+  if (status) match.status = status;
+
   if (user && mongoose.Types.ObjectId.isValid(user)) {
-    filter.user = user;
+    match.user = new mongoose.Types.ObjectId(user);
+  }
+
+  // 🔍 SEARCH LOGIC
+  if (search) {
+    const searchRegex = new RegExp(search, "i");
+
+    match.$or = [
+      { "user.name": searchRegex },
+      { "user.email": searchRegex },
+    ];
+
+    // Optional: search by Order ID
+    if (mongoose.Types.ObjectId.isValid(search)) {
+      match.$or.push({ _id: new mongoose.Types.ObjectId(search) });
+    }
   }
 
   const [orders, total] = await Promise.all([
-    Order.find(filter)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 })
-      .populate("user", "email name")
-      .populate("products.product", "name price")
-      .lean(),
-    Order.countDocuments(filter),
+    Order.aggregate([
+      // 🔥 JOIN FIRST (so we can search user fields)
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+
+      // 🔥 NOW apply filters + search
+      { $match: match },
+
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+
+      {
+        $addFields: {
+          productsCount: { $size: "$products" },
+        },
+      },
+
+      {
+        $project: {
+          products: 0,
+          "user.password": 0,
+        },
+      },
+    ]),
+
+    // ⚠️ total count must also include search
+    Order.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $match: match },
+      { $count: "total" },
+    ]),
   ]);
+
   return {
     orders,
-    total,
+    total: total[0]?.total || 0,
     page,
     limit,
   };
@@ -159,5 +216,22 @@ export const refundOrder = async (id, userId) => {
   order.isRefunded = true;
   order.updatedBy = userId;
   await order.save();
+  return order;
+};
+
+export const getOrderById = async (id) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid order ID");
+  }
+
+  const order = await Order.findById(id)
+    .populate("user", "name email")
+    .populate("products.product", "name price")
+    .lean();
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
   return order;
 };
