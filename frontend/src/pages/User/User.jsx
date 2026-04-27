@@ -15,7 +15,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "react-hot-toast";
-import { getAllUsers } from "../../api/user.api";
+import { createUser, getAllUsers, updateUser } from "../../api/user.api";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import UserFormModal from "./components/UserFormModal";
@@ -108,12 +108,10 @@ const UserPage = () => {
             setSubmitLoading(true);
 
             if (selectedUser) {
-                // update API
-                // await updateUser(selectedUser._id, payload);
+                await updateUser(selectedUser._id, payload);
                 toast.success("User updated");
             } else {
-                // create API
-                // await createUser(payload);
+                const response=await createUser(payload);
                 toast.success("User created");
             }
 
@@ -156,6 +154,7 @@ const UserPage = () => {
                 loading={loading}
                 users={users}
                 page={page}
+                handleEdit={handleEdit}
                 rowsPerPage={rowsPerPage}
                 total={total}
                 handleChangePage={handleChangePage}

@@ -12,9 +12,30 @@ export const getUserProfile = async () => {
 
 export const getAllUsers = async (params) => {
   try {
-    const response = await api.get(endpoints.user.users,{params});
+    const response = await api.get(endpoints.user.users, { params });
     return response.data;
   } catch (error) {
     throw new Error(error?.response?.data || "failed");
+  }
+};
+
+export const createUser = async (payload) => {
+  try {
+    const response = await api.post(endpoints.user.createUser, payload);
+    return response?.data;
+  } catch (error) {
+    return error?.message;
+  }
+};
+
+export const updateUser = async (id, payload) => {
+  try {
+    const response = await api.put(
+      endpoints.user.updateUser.replace(":id", id),
+      payload,
+    );
+    return response?.data;
+  } catch (error) {
+    return error?.message;
   }
 };

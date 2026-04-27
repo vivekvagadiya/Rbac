@@ -1,15 +1,20 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Button,
-  MenuItem,
   Box,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { useEffect, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { userSchema } from "./helper";
+import FormInput from "../../../components/form/FormInput";
+import FormSelect from "../../../components/form/FormSelect";
+import { getRoles } from "../../../api/role.api";
+import FormSwitch from "../../../components/form/FormSwitch";
 
 
 const FormContainer = styled(Box)({
@@ -19,79 +24,89 @@ const FormContainer = styled(Box)({
   marginTop: "8px",
 });
 
+const defaultValues = {
+  name: "",
+  email: "",
+  password: "",
+  roleId: "",
+  isBlocked: false
+};
 
 const UserFormModal = ({
   open,
   onClose,
   onSubmit,
-  roles = [],
   loading = false,
-  initialData = null, // for edit
+  initialData = null,
 }) => {
-  const isEdit = Boolean(initialData);
+  const isEdit = useMemo(() => !!initialData?._id, [initialData]);
+  console.log('initialData', initialData);
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    roleId: "",
+
+  const {
+    reset,
+    control,
+    handleSubmit,
+    formState: { isDirty, isValid },
+  } = useForm({
+    resolver: yupResolver(userSchema),
+    defaultValues,
+    context: { isEdit },
+    mode: "onChange",
   });
 
-  const [errors, setErrors] = useState({});
+  // =========================
+  // 🔥 Roles State + Fetch
+  // =========================
+  const [roles, setRoles] = useState([]);
+
+  const fetchRoles = async () => {
+    try {
+      const res = await getRoles(); // 👉 you implement API
+      // expected: [{ _id, name }]
+      setRoles(res?.data || []);
+    } catch (err) {
+      console.error("Failed to fetch roles", err);
+    }
+  };
 
   useEffect(() => {
-    if (initialData) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setForm({
-        name: initialData.name || "",
-        email: initialData.email || "",
-        password: "",
-        roleId: initialData?.role?._id || "",
-      });
-    } else {
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        roleId: "",
-      });
+    if (open) {
+      // reset form
+      reset(
+        initialData
+          ? { ...defaultValues, ...initialData, roleId: initialData?.role?._id, password: "" } // don't prefill password
+          : defaultValues
+      );
+
+      // fetch roles only if not provided via props
+      if (!roles.length) {
+        fetchRoles();
+      }
     }
-  }, [initialData, open]);
+  }, [open, initialData, reset]);
 
-  const handleChange = (field) => (e) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: e.target.value,
-    }));
-  };
+  // =========================
+  // 🔁 Final Roles Source
+  // =========================
+  const roleOptions = roles.map((role) => ({
+    label: role.name,
+    value: role._id,
+  }));
 
-  const validate = () => {
-    const newErrors = {};
-
-    if (!form.name.trim()) newErrors.name = "Name is required";
-    if (!form.email.trim()) newErrors.email = "Email is required";
-
-    if (!isEdit && !form.password) {
-      newErrors.password = "Password is required";
-    }
-
-    if (!form.roleId) newErrors.roleId = "Role is required";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (!validate()) return;
-
+  // =========================
+  // ✅ Form Submit (controlled)
+  // =========================
+  const onFormSubmit = (data) => {
     const payload = {
-      name: form.name,
-      email: form.email,
-      roleId: form.roleId,
-      ...(form.password ? { password: form.password } : {}),
+      name: data.name,
+      email: data.email,
+      roleId: data.roleId,
+      ...(data.password ? { password: data.password } : {}),
+      isBlocked: data.isBlocked
     };
 
-    onSubmit(payload);
+    onSubmit(payload); // 🔥 keep your API call outside
   };
 
   return (
@@ -102,51 +117,36 @@ const UserFormModal = ({
 
       <DialogContent>
         <FormContainer>
-          <TextField
-            label="Name"
-            value={form.name}
-            onChange={handleChange("name")}
-            error={!!errors.name}
-            helperText={errors.name}
-            fullWidth
-          />
+          <FormInput control={control} name="name" label="Name" />
 
-          <TextField
+          <FormInput
+            control={control}
+            name="email"
             label="Email"
-            value={form.email}
-            onChange={handleChange("email")}
-            error={!!errors.email}
-            helperText={errors.email}
-            fullWidth
+            type="email"
           />
 
           {!isEdit && (
-            <TextField
+            <FormInput
+              control={control}
+              name="password"
               label="Password"
               type="password"
-              value={form.password}
-              onChange={handleChange("password")}
-              error={!!errors.password}
-              helperText={errors.password}
-              fullWidth
             />
           )}
 
-          <TextField
-            select
+          <FormSelect
+            control={control}
+            name="roleId"
             label="Role"
-            value={form.roleId}
-            onChange={handleChange("roleId")}
-            error={!!errors.roleId}
-            helperText={errors.roleId}
-            fullWidth
-          >
-            {roles.map((role) => (
-              <MenuItem key={role._id} value={role._id}>
-                {role.name}
-              </MenuItem>
-            ))}
-          </TextField>
+            options={roleOptions}
+          />
+
+          <FormSwitch
+            control={control}
+            name="isBlocked"
+            label="Blocked"
+          />
         </FormContainer>
       </DialogContent>
 
@@ -157,8 +157,8 @@ const UserFormModal = ({
 
         <Button
           variant="contained"
-          onClick={handleSubmit}
-          disabled={loading}
+          onClick={handleSubmit(onFormSubmit)}
+          disabled={loading || !isValid}
         >
           {isEdit ? "Update" : "Create"}
         </Button>

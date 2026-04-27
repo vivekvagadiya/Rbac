@@ -9,6 +9,8 @@ export const endpoints = {
   user: {
     profile: `${baseUrl}/auth/profile`,
     users: `${baseUrl}/users`,
+    createUser: `${baseUrl}/users`,
+    updateUser:`${baseUrl}/users/:id`
   },
   product: {
     getProduct: `${baseUrl}/products`,
@@ -21,5 +23,8 @@ export const endpoints = {
     getOrderById: `${baseUrl}/orders/:id`,
     updateStatus: `${baseUrl}/orders/:id/status`,
     updateRefund: `${baseUrl}/orders/:id/refund`,
+  },
+  roles: {
+    getRoles: `${baseUrl}/roles`,
   },
 };

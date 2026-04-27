@@ -37,7 +37,8 @@ const UserTable = ({
     handleChangePage,
     rowsPerPage,
     handleChangeRowsPerPage,
-    total, }) => {
+    total,
+    handleEdit }) => {
     return (<>
         <Box sx={{ width: "100%", overflowX: "auto" }}>
             <StyledTableContainer component={Paper}>
