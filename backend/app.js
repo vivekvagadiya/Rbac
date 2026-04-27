@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const { seedPermissions } = require("./seeds/permission.seed");
-const seedOrders = require("./seeds/order.seed");
+// const { seedPermissions } = require("./seeds/permission.seed");
+// const seedOrders = require("./seeds/order.seed");
 const errorHandler = require("./middleware/error.middleware").default;
 
 const app = express();

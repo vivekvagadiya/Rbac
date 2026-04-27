@@ -90,4 +90,5 @@ const seedOrders = async () => {
   }
 };
 
-module.exports = seedOrders;
+// module.exports = seedOrders;
+seedOrders();

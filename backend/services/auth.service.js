@@ -113,7 +113,7 @@ export const logoutUser = async (userId) => {
 };
 
 export const getUserData = async (userId) => {
-  const user = await User.findOne({ _id: userId, isDeleted: false }).populate({
+  const user = await User.findOne({ _id: userId }).populate({
     path: "role",
     populate: { path: "permissions" },
   });

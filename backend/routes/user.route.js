@@ -8,7 +8,7 @@ const { validateObjectId } = require("../middleware/validateId.middleware.js");
 router.get(
   "/",
   authenticate,
-  checkPermission("user:read"),
+  checkPermission("user.read"),
   userController.getUsers,
 );
 
@@ -16,14 +16,14 @@ router.get(
   "/:id",
   authenticate,
   validateObjectId,
-  checkPermission("user:read"),
+  checkPermission("user.read"),
   userController.getUserById,
 );
 router.put(
   "/:id",
   authenticate,
   validateObjectId,
-  checkPermission("user:update"),
+  checkPermission("user.update"),
   userController.updateUser,
 );
 
@@ -31,7 +31,7 @@ router.delete(
   "/:id",
   authenticate,
   validateObjectId,
-  checkPermission("user:delete"),
+  checkPermission("user.delete"),
   userController.deleteUser,
 );
 
@@ -39,7 +39,7 @@ router.patch(
   "/:id/role",
   authenticate,
   validateObjectId,
-  checkPermission("user:update"),
+  checkPermission("user.update"),
   userController.assignRoleToUser,
 );
 
@@ -47,7 +47,7 @@ router.patch(
   "/:id/block",
   authenticate,
   validateObjectId,
-  checkPermission("user:update"),
+  checkPermission("user.update"),
   userController.toggleBlockUser,
 );
 
