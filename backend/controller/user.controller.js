@@ -94,14 +94,20 @@ export const updateUser = async (req, res, next) => {
 // ✅ Delete User (Soft Delete)
 export const deleteUser = async (req, res, next) => {
   try {
-    if (req.user._id === req.params.id) {
-      throw new ApiError(400, "You cannot perform this action on yourself");
+    const userId = req.params.id;
+
+    if (req.user._id.toString() === userId) {
+      return next(
+        new ApiError(400, "You cannot perform this action on yourself")
+      );
     }
-    await userService.deleteUser(req.params.id);
+
+    const user = await userService.deleteUser(userId);
 
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
+      data: user,
     });
   } catch (error) {
     next(error);

@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 //  Create User (Admin side)
 
 export const createUser = async (data) => {
-  let { name, email, password, roleId ,isBlocked} = data;
+  let { name, email, password, roleId, isBlocked } = data;
 
   // =========================
   // 1. Normalize Input
@@ -43,7 +43,7 @@ export const createUser = async (data) => {
     email,
     password: hashedPassword,
     role: roleId,
-    isBlocked: isBlocked
+    isBlocked: isBlocked,
   });
 
   // =========================
@@ -69,7 +69,7 @@ export const getUsers = async (query) => {
   // 🔍 Build Query
   // =====================
   const filter = {
-    isDeleted: false,
+    // isDeleted: false,
   };
 
   // 🔍 Search (name + email)
@@ -102,6 +102,8 @@ export const getUsers = async (query) => {
     filter.isBlocked = false;
   } else if (status === "blocked") {
     filter.isBlocked = true;
+  } else if (status === "deleted") {
+    filter.isDeleted = true;
   }
 
   // =====================
@@ -171,8 +173,8 @@ export const updateUser = async (userId, data) => {
     updateData.email = email;
   }
 
-  if(data.isBlocked!==undefined){
-    updateData.isBlocked=data.isBlocked;
+  if (data.isBlocked !== undefined) {
+    updateData.isBlocked = data.isBlocked;
   }
 
   // =========================
@@ -219,17 +221,22 @@ export const updateUser = async (userId, data) => {
 
 //  Soft Delete User
 export const deleteUser = async (userId) => {
-  const user = await User.findByIdAndUpdate(
-    userId,
-    { isDeleted: true },
-    { new: true },
-  );
+  const user = await User.findOne({
+    _id: userId,
+    isDeleted: false,
+  });
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, "User not found or already deleted");
   }
 
-  return user;
+  user.isDeleted = true;
+  await user.save();
+
+  const userObj = user.toObject();
+  delete userObj.password;
+
+  return userObj;
 };
 
 //  Assign Role to User
