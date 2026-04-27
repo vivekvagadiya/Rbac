@@ -21,15 +21,17 @@ export const getUsers = async (req, res, next) => {
   try {
     const { page, limit } = req.query;
 
-    const result = await userService.getUsers({
-      page: Number(page) || 1,
-      limit: Number(limit) || 10,
-    });
+    const result = await userService.getUsers(req.query);
 
     res.status(200).json({
       success: true,
       message: "Users fetched successfully",
-      ...result,
+      data:result.users,
+      meta:{
+        total: result.total,
+        page: result.page,
+        pages: result.pages,
+      }
     });
   } catch (error) {
     next(error);

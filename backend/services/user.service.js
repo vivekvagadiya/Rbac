@@ -16,23 +16,74 @@ export const createUser = async (data) => {
 };
 
 //  Get All Users (with pagination + filtering)
-export const getUsers = async ({ page = 1, limit = 10 }) => {
+export const getUsers = async (query) => {
+  let { page = 1, limit = 10, search, role, status } = query;
+
+  // ✅ sanitize inputs
+  page = Math.max(1, parseInt(page) || 1);
+  limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
+
   const skip = (page - 1) * limit;
 
-  const users = await User.find({ isDeleted: false })
+  // =====================
+  // 🔍 Build Query
+  // =====================
+  const filter = {
+    isDeleted: false,
+  };
+
+  // 🔍 Search (name + email)
+  if (search) {
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  // 🎭 Role filter
+  if (role) {
+    const roleDoc = await Role.findOne({ name: role });
+
+    if (!roleDoc) {
+      return {
+        users: [],
+        total: 0,
+        page,
+        limit,
+        pages: 0,
+      };
+    }
+
+    filter.role = roleDoc._id;
+  }
+
+  // 📌 Status filter
+  if (status === "active") {
+    filter.isBlocked = false;
+  } else if (status === "blocked") {
+    filter.isBlocked = true;
+  }
+
+  // =====================
+  // 📦 Fetch Data
+  // =====================
+  const users = await User.find(filter)
     .skip(skip)
     .limit(limit)
+    .sort({ createdAt: -1 }) // latest first
     .populate({
       path: "role",
-      populate: { path: "permissions" },
-    });
+      select: "name", // optimize
+    })
+    .lean(); // performance boost
 
-  const total = await User.countDocuments({ isDeleted: false });
+  const total = await User.countDocuments(filter);
 
   return {
     users,
     total,
     page,
+    limit,
     pages: Math.ceil(total / limit),
   };
 };
