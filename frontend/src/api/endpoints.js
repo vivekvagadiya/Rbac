@@ -11,6 +11,8 @@ export const endpoints={
         users:`${baseUrl}/users`,
     },
     product:{
-        getProduct:`${baseUrl}/products`
+        getProduct:`${baseUrl}/products`,
+        createProduct:`${baseUrl}/products`,
+        updateProduct:`${baseUrl}/products`
     }
 }

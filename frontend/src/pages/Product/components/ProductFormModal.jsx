@@ -12,11 +12,11 @@ import {
   CircularProgress,
   Stack,
 } from "@mui/material";
-import { 
-  Close as CloseIcon, 
-  Inventory as InventoryIcon, 
-  Info as InfoIcon, 
-  Description as DescriptionIcon 
+import {
+  Close as CloseIcon,
+  Inventory as InventoryIcon,
+  Info as InfoIcon,
+  Description as DescriptionIcon
 } from "@mui/icons-material";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -26,6 +26,8 @@ import { productSchema } from "./helper";
 import FormInput from "../../../components/form/FormInput";
 import FormSelect from "../../../components/form/FormSelect";
 import FormSwitch from "../../../components/form/FormSwitch";
+import { toast } from 'react-hot-toast'
+import { createProduct, updateProduct } from "../../../api/product.api";
 
 const categories = [
   { label: "Electronics", value: "electronics" },
@@ -44,7 +46,7 @@ const defaultValues = {
   isActive: true,
 };
 
-const ProductFormModal = ({ open, onClose, editData }) => {
+const ProductFormModal = ({ open, onClose, editData, onSuccess }) => {
   const isEdit = useMemo(() => !!editData?._id, [editData]);
 
   const {
@@ -70,11 +72,29 @@ const ProductFormModal = ({ open, onClose, editData }) => {
   };
 
   const onSubmit = async (data) => {
+    console.log('test', data);
+    const payload = {
+      name: data.name,
+      price: data.price,
+      category: data.category,
+      stock: data.stock,
+      description: data.description,
+      isActive: data.isActive,
+    }
+
     try {
       if (isEdit) {
-        console.log("UPDATE:", data);
+        const response = await updateProduct(editData?._id, payload);
+        toast.success(response.message || "test");
+        onSuccess?.()
+        console.log(response);
       } else {
-        console.log("CREATE:", data);
+        const response = await createProduct(data);
+        toast.success(response.message || "test");
+        onSuccess?.()
+        console.log(response);
+
+
       }
       handleClose();
     } catch (err) {
@@ -89,8 +109,8 @@ const ProductFormModal = ({ open, onClose, editData }) => {
       fullWidth
       maxWidth="sm"
       PaperProps={{
-        sx: { 
-          borderRadius: 4, 
+        sx: {
+          borderRadius: 4,
           backgroundImage: 'none', // Prevents gray tint in dark mode
         },
       }}
@@ -105,26 +125,26 @@ const ProductFormModal = ({ open, onClose, editData }) => {
         </IconButton>
       </DialogTitle>
 
-      <DialogContent dividers sx={{ borderBottom: 'none', px: 4, py: 3   }}>
+      <DialogContent dividers sx={{ borderBottom: 'none', px: 4, py: 3 }}>
         <Stack spacing={4}>
-          
+
           {/* SECTION 1: BASIC INFO */}
           <Box>
-            <Stack direction="row" spacing={1} sx={{alignItems:"center"}} mb={2}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }} mb={2}>
               <InfoIcon fontSize="small" color="primary" />
               <Typography variant="overline" fontWeight={700} letterSpacing={1.2}>
                 Basic Information
               </Typography>
             </Stack>
-            
+
             <Grid container spacing={3}>
-              <Grid item size={{xs:12}}>
+              <Grid item size={{ xs: 12 }}>
                 <FormInput name="name" label="Product Name" control={control} fullWidth />
               </Grid>
-              <Grid item size={{xs:12,sm:6}}>
+              <Grid item size={{ xs: 12, sm: 6 }}>
                 <FormInput name="price" label="Price" type="number" control={control} fullWidth />
               </Grid>
-              <Grid item size={{xs:12,sm:6}}>
+              <Grid item size={{ xs: 12, sm: 6 }}>
                 <FormSelect
                   name="category"
                   label="Category"
@@ -138,20 +158,20 @@ const ProductFormModal = ({ open, onClose, editData }) => {
 
           {/* SECTION 2: INVENTORY */}
           <Box p={2.5} sx={{ borderRadius: 3 }}>
-            <Stack direction="row" spacing={1} sx={{alignItems:"center"}} mb={2}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }} mb={2}>
               <InventoryIcon fontSize="small" color="primary" />
               <Typography variant="overline" fontWeight={700} letterSpacing={1.2}>
                 Inventory & Status
               </Typography>
             </Stack>
-            
-            <Grid container spacing={3} sx={{alignItems:'center'}}>
-              <Grid item size={{xs:12,sm:6}}>
+
+            <Grid container spacing={3} sx={{ alignItems: 'center' }}>
+              <Grid item size={{ xs: 12, sm: 6 }}>
                 <FormInput name="stock" label="Stock Quantity" type="number" control={control} fullWidth />
               </Grid>
-              <Grid item size={{xs:12,sm:6}}>
+              <Grid item size={{ xs: 12, sm: 6 }}>
                 <Box sx={{ ml: 1 }}>
-                   <FormSwitch name="isActive" label="Available for sale" control={control} />
+                  <FormSwitch name="isActive" label="Available for sale" control={control} />
                 </Box>
               </Grid>
             </Grid>
@@ -159,7 +179,7 @@ const ProductFormModal = ({ open, onClose, editData }) => {
 
           {/* SECTION 3: DESCRIPTION */}
           <Box>
-            <Stack direction="row" spacing={1} sx={{alignItems:'center'}} mb={2}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} mb={2}>
               <DescriptionIcon fontSize="small" color="primary" />
               <Typography variant="overline" fontWeight={700} letterSpacing={1.2}>
                 Description
@@ -178,10 +198,10 @@ const ProductFormModal = ({ open, onClose, editData }) => {
       </DialogContent>
 
       <DialogActions sx={{ p: 3, gap: 1 }}>
-        <Button 
-          onClick={handleClose} 
-          color="inherit" 
-          variant="text" 
+        <Button
+          onClick={handleClose}
+          color="inherit"
+          variant="text"
           sx={{ fontWeight: 600 }}
         >
           Cancel
@@ -191,9 +211,9 @@ const ProductFormModal = ({ open, onClose, editData }) => {
           onClick={handleSubmit(onSubmit)}
           disabled={isSubmitting || !isValid || !isDirty}
           elevation={0}
-          sx={{ 
-            borderRadius: 2, 
-            px: 4, 
+          sx={{
+            borderRadius: 2,
+            px: 4,
             py: 1,
             textTransform: 'none',
             fontWeight: 700,

@@ -139,6 +139,7 @@ const ProductPage = () => {
             <ProductFormModal
                 open={openModal}
                 onClose={() => setOpenModal(false)}
+                onSuccess={() => fetchProducts()}
                 editData={editData}
             />
         </Box>
