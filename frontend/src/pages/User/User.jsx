@@ -19,6 +19,9 @@ import { getAllUsers } from "../../api/user.api";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import UserFormModal from "./components/UserFormModal";
+import UserTable from "./components/UserTable";
+import UserFilter from "./components/UserFilter";
+import { useDebounce } from "../../hooks/debounce.hook";
 
 
 const PageContainer = styled(Box)(({ theme }) => ({
@@ -42,32 +45,7 @@ const Header = styled(Box)(({ theme }) => ({
     },
 }));
 
-const StyledTableContainer = styled(TableContainer)({
-    borderRadius: "12px",
-    width: "100%",
-    overflowX: "auto", // ✅ horizontal scroll
-});
 
-const StyledTableHead = styled(TableHead)({
-    backgroundColor: "#f8fafc",
-});
-
-const StyledTableCellHead = styled(TableCell)({
-    fontWeight: 600,
-    fontSize: "14px",
-    color: "#475569",
-});
-
-const StyledTableRow = styled(TableRow)({
-    "&:hover": {
-        backgroundColor: "#f1f5f9",
-    },
-});
-
-const StatusText = styled("span")(({ status }) => ({
-    color: status === "active" ? "#16a34a" : "#dc2626",
-    fontWeight: 500,
-}));
 
 // ================== Component ==================
 
@@ -78,22 +56,38 @@ const UserPage = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [roles, setRoles] = useState([]);
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [total, setTotal] = useState(0);
+    const [filters, setFilters] = useState({
+        search: "",
+        role: "",
+        status: "",
+    });
+    const debouncedSearch = useDebounce(filters.search, 500);
 
     const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
 
-            const res = await getAllUsers();
-            setUsers(res?.users || res || []);
+            const params = {
+                ...(debouncedSearch && { search: debouncedSearch }),
+                ...(filters.role && { role: filters.role }),
+                ...(filters.status && { status: filters.status }),
+                page: page + 1,
+                limit: rowsPerPage,
+            };
+
+            const res = await getAllUsers(params);
+
+            setUsers(res?.data || []);
+            setTotal(res?.meta?.total || 0);
         } catch (err) {
-            const message =
-                err?.response?.data?.message || err?.message || "Failed to fetch users";
-            toast.error(message);
+            toast.error("Failed to fetch users");
         } finally {
             setLoading(false);
         }
-    }, []);
-
+    }, [debouncedSearch, filters.role, filters.status, page, rowsPerPage]);
     useEffect(() => {
         fetchUsers();
     }, [fetchUsers]);
@@ -132,9 +126,18 @@ const UserPage = () => {
         }
     };
 
+    const handleChangePage = (_, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (e) => {
+        setRowsPerPage(parseInt(e.target.value, 10));
+        setPage(0);
+    };
+
 
     return (<>
-        <PageContainer>
+        <PageContainer sx={{ p: 2 }}>
             {/* Header */}
             <Header>
                 <Typography variant="h6" fontWeight={600}>
@@ -143,69 +146,21 @@ const UserPage = () => {
 
                 <Button variant="contained" onClick={handleCreate}>
                     Create User
-                </Button>
+                </Button>   
             </Header>
 
+            <UserFilter filters={filters} setFilters={(val)=>{setFilters(val);setPage(0)}} />
+
             {/* Table */}
-            <Box sx={{ width: "100%", overflowX: "auto" }}>
-                <StyledTableContainer component={Paper}>
-                    <Table sx={{ minWidth: 650 }}>
-                        <StyledTableHead>
-                            <TableRow>
-                                <StyledTableCellHead>Name</StyledTableCellHead>
-                                <StyledTableCellHead>Email</StyledTableCellHead>
-                                <StyledTableCellHead>Role</StyledTableCellHead>
-                                <StyledTableCellHead>Status</StyledTableCellHead>
-                                <StyledTableCellHead align="center">
-                                    Actions
-                                </StyledTableCellHead>
-                            </TableRow>
-                        </StyledTableHead>
+            <UserTable
+                loading={loading}
+                users={users}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                total={total}
+                handleChangePage={handleChangePage}
+                handleChangeRowsPerPage={handleChangeRowsPerPage} />
 
-                        <TableBody>
-                            {/* Loading */}
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} align="center">
-                                        <CircularProgress size={24} />
-                                    </TableCell>
-                                </TableRow>
-                            ) : users.length === 0 ? (
-                                // Empty State
-                                <TableRow>
-                                    <TableCell colSpan={5} align="center">
-                                        No users found
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                users.map((item) => (
-                                    <StyledTableRow key={item._id}>
-                                        <TableCell>{item?.name}</TableCell>
-                                        <TableCell>{item?.email}</TableCell>
-                                        <TableCell>{item?.role?.name || "-"}</TableCell>
-
-                                        <TableCell>
-                                            <StatusText status={item?.isBlocked ? "blocked" : "active"}>
-                                                {item?.isBlocked ? "Blocked" : "Active"}
-                                            </StatusText>
-                                        </TableCell>
-
-                                        <TableCell align="center">
-                                            <IconButton size="small" onClick={() => handleEdit(item)}>
-                                                <EditDocumentIcon fontSize="small" />
-                                            </IconButton>
-
-                                            <IconButton size="small" color="error">
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        </TableCell>
-                                    </StyledTableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </StyledTableContainer>
-            </Box>
         </PageContainer>
         <UserFormModal
             open={openModal}

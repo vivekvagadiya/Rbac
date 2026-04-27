@@ -10,9 +10,9 @@ export const getUserProfile = async () => {
   }
 };
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (params) => {
   try {
-    const response = await api.get(endpoints.user.users);
+    const response = await api.get(endpoints.user.users,{params});
     return response.data;
   } catch (error) {
     throw new Error(error?.response?.data || "failed");
