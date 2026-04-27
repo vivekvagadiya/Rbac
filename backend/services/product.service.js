@@ -15,31 +15,24 @@ export const getProducts = async (query) => {
 
   const filter = {};
 
-  // 🔍 Search
+  //  Search
   if (search?.trim()) {
     const regex = new RegExp(search.trim(), "i");
-    filter.$or = [
-      { name: regex },
-      { description: regex },
-    ];
+    filter.$or = [{ name: regex }, { description: regex }];
   }
 
-  // 📦 Category
+  //  Category
   if (category) {
     filter.category = category;
   }
 
-  // 🔄 Status (BOOLEAN ONLY)
- if(isActive ){
-  filter.isActive=isActive
- }
+  //  Status (BOOLEAN ONLY)
+  if (isActive) {
+    filter.isActive = isActive;
+  }
 
   const [products, total] = await Promise.all([
-    Product.find(filter)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 })
-      .lean(),
+    Product.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
 
     Product.countDocuments(filter),
   ]);
@@ -61,6 +54,7 @@ export const createProduct = async (data, userId) => {
       ...data,
       name: data.name.trim(),
       stock: data.stock ?? 0,
+      isActive: data.isActive ?? true,
       createdBy: userId,
       updatedBy: userId,
     });
@@ -78,7 +72,7 @@ export const updateProduct = async (id, data, userId) => {
   }
 
   const updatedProduct = await Product.findOneAndUpdate(
-    { _id: id, isActive: true },
+    { _id: id},
     {
       $set: {
         ...data,

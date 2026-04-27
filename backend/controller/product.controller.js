@@ -27,7 +27,7 @@ export const getProducts = async (req, res, next) => {
  */
 export const createProduct = async (req, res, next) => {
   try {
-    let { name, description, price, category, stock } = req.body;
+    let { name, description, price, category, stock,isActive } = req.body;
 
     // Validation
     if (!name || !name.trim() || price == null || !category) {
@@ -51,6 +51,7 @@ export const createProduct = async (req, res, next) => {
         price,
         category,
         stock: stock ?? 0,
+        isActive: isActive ?? true,
       },
       req.user._id
     );
@@ -58,6 +59,7 @@ export const createProduct = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       data: product,
+      message:"Product created successfully"
     });
   } catch (error) {
     next(error);
@@ -78,7 +80,7 @@ export const updateProduct = async (req, res, next) => {
       });
     }
 
-    const allowedFields = ["name", "description", "price", "category", "stock"];
+    const allowedFields = ["name", "description", "price", "category", "stock", "isActive"];
 
     const updateData = {};
 
