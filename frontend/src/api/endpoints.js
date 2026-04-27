@@ -10,7 +10,8 @@ export const endpoints = {
     profile: `${baseUrl}/auth/profile`,
     users: `${baseUrl}/users`,
     createUser: `${baseUrl}/users`,
-    updateUser:`${baseUrl}/users/:id`
+    updateUser:`${baseUrl}/users/:id`,
+    deleteUser:`${baseUrl}/users/:id`,
   },
   product: {
     getProduct: `${baseUrl}/products`,

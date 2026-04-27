@@ -39,3 +39,13 @@ export const updateUser = async (id, payload) => {
     return error?.message;
   }
 };
+export const deleteUserApi = async (id) => {
+  try {
+    const response = await api.delete(
+      endpoints.user.deleteUser.replace(":id", id),
+    );
+    return response?.data;
+  } catch (error) {
+    return error?.message;
+  }
+};

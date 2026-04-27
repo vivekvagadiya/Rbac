@@ -66,6 +66,7 @@ const UserFilter = ({ filters, setFilters }) => {
                     <MenuItem value="">All</MenuItem>
                     <MenuItem value="active">Active</MenuItem>
                     <MenuItem value="blocked">Blocked</MenuItem>
+                    <MenuItem value="deleted">Deleted</MenuItem>
                 </TextField>
 
                 {/* 🔄 Reset */}

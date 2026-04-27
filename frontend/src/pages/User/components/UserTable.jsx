@@ -38,7 +38,8 @@ const UserTable = ({
     rowsPerPage,
     handleChangeRowsPerPage,
     total,
-    handleEdit }) => {
+    handleEdit,
+    handleDelete }) => {
     return (<>
         <Box sx={{ width: "100%", overflowX: "auto" }}>
             <StyledTableContainer component={Paper}>
@@ -88,7 +89,7 @@ const UserTable = ({
                                             <EditDocumentIcon fontSize="small" />
                                         </IconButton>
 
-                                        <IconButton size="small" color="error">
+                                        <IconButton size="small" color="error" onClick={() => handleDelete(item)}>
                                             <DeleteIcon fontSize="small" />
                                         </IconButton>
                                     </TableCell>

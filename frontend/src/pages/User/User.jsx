@@ -15,13 +15,14 @@ import {
 import { styled } from "@mui/material/styles";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "react-hot-toast";
-import { createUser, getAllUsers, updateUser } from "../../api/user.api";
+import { createUser, deleteUserApi, getAllUsers, updateUser } from "../../api/user.api";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import UserFormModal from "./components/UserFormModal";
 import UserTable from "./components/UserTable";
 import UserFilter from "./components/UserFilter";
 import { useDebounce } from "../../hooks/debounce.hook";
+import ConfirmDeleteDialog from "./components/ConfirmDeleteDialog";
 
 
 const PageContainer = styled(Box)(({ theme }) => ({
@@ -65,6 +66,8 @@ const UserPage = () => {
         status: "",
     });
     const debouncedSearch = useDebounce(filters.search, 500);
+    const [deleteUser, setDeleteUser] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -111,7 +114,7 @@ const UserPage = () => {
                 await updateUser(selectedUser._id, payload);
                 toast.success("User updated");
             } else {
-                const response=await createUser(payload);
+                const response = await createUser(payload);
                 toast.success("User created");
             }
 
@@ -133,6 +136,25 @@ const UserPage = () => {
         setPage(0);
     };
 
+    const handleDeleteClick = (user) => {
+        setDeleteUser(user);
+    };
+
+    const handleConfirmDelete = async () => {
+        try {
+            setDeleteLoading(true);
+
+            await deleteUserApi(deleteUser._id); // your API
+
+            toast.success("User deleted");
+            setDeleteUser(null);
+            fetchUsers();
+        } catch (err) {
+            toast.error("Failed to delete user");
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
 
     return (<>
         <PageContainer sx={{ p: 2 }}>
@@ -144,10 +166,10 @@ const UserPage = () => {
 
                 <Button variant="contained" onClick={handleCreate}>
                     Create User
-                </Button>   
+                </Button>
             </Header>
 
-            <UserFilter filters={filters} setFilters={(val)=>{setFilters(val);setPage(0)}} />
+            <UserFilter filters={filters} setFilters={(val) => { setFilters(val); setPage(0) }} />
 
             {/* Table */}
             <UserTable
@@ -155,10 +177,12 @@ const UserPage = () => {
                 users={users}
                 page={page}
                 handleEdit={handleEdit}
+                handleDelete={handleDeleteClick}
                 rowsPerPage={rowsPerPage}
                 total={total}
                 handleChangePage={handleChangePage}
                 handleChangeRowsPerPage={handleChangeRowsPerPage} />
+
 
         </PageContainer>
         <UserFormModal
@@ -168,6 +192,13 @@ const UserPage = () => {
             roles={roles}
             loading={submitLoading}
             initialData={selectedUser}
+        />
+        <ConfirmDeleteDialog
+            open={!!deleteUser}
+            user={deleteUser}
+            onClose={() => setDeleteUser(null)}
+            onConfirm={handleConfirmDelete}
+            loading={deleteLoading}
         />
     </>
     );
