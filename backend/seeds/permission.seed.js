@@ -1,31 +1,38 @@
-import Permission from "../models/permission.model.js";
+const mongoose = require("mongoose");
+const Permission = require("../models/permission.model.js");
 
-const permissions = [
-  { name: "user:create", module: "user", action: "create" },
-  { name: "user:read", module: "user", action: "read" },
-  { name: "user:update", module: "user", action: "update" },
-  { name: "user:delete", module: "user", action: "delete" },
+const MONGO_URI = "mongodb://localhost:27017/vivek-node"; // move to .env later
 
-  { name: "product:create", module: "product", action: "create" },
-  { name: "product:read", module: "product", action: "read" },
-  { name: "product:update", module: "product", action: "update" },
-  { name: "product:delete", module: "product", action: "delete" },
+const modules = ["user", "role", "product", "order", "category", "permission"];
+const actions = ["create", "read", "update", "delete"];
 
-  { name: "order:create", module: "order", action: "create" },
-  { name: "order:read", module: "order", action: "read" },
-  { name: "order:update", module: "order", action: "update" },
-  { name: "order:delete", module: "order", action: "delete" },
-  { name: "order:refund", module: "order", action: "refund" },
-];
+const seedPermissions = async () => {
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log("MongoDB Connected");
 
-export const seedPermissions = async () => {
-  for (const perm of permissions) {
-    await Permission.updateOne(
-      { name: perm.name },       // check existing
-      { $setOnInsert: perm },    // insert only if not exists
-      { upsert: true }
-    );
+    await Permission.deleteMany();
+
+    const permissions = [];
+
+    modules.forEach((module) => {
+      actions.forEach((action) => {
+        permissions.push({
+          name: `${module}.${action}`, // IMPORTANT
+          module,
+          action,
+        });
+      });
+    });
+
+    await Permission.insertMany(permissions);
+
+    console.log(`Permissions seeded ✅ (${permissions.length} total)`);
+    process.exit();
+  } catch (error) {
+    console.error("Seeding failed ❌", error);
+    process.exit(1);
   }
-
-  console.log("Permissions seeded (no duplicates)");
 };
+
+seedPermissions();

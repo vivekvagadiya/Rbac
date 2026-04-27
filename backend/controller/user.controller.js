@@ -1,11 +1,25 @@
 import * as userService from "../services/user.service.js";
 import ApiError from "../utils/ApiError.js";
 
-// ✅ Create User
 export const createUser = async (req, res, next) => {
   try {
+    const { name, email, password, roleId ,isBlocked} = req.body;
+
+    // =========================
+    // 1. Basic Validation (fallback)
+    // =========================
+    if (!name || !email || !password || !roleId ||!isBlocked) {
+      return next(new ApiError(400, "All fields are required"));
+    }
+
+    // =========================
+    // 2. Call Service
+    // =========================
     const user = await userService.createUser(req.body);
 
+    // =========================
+    // 3. Send Response
+    // =========================
     res.status(201).json({
       success: true,
       message: "User created successfully",
@@ -15,21 +29,22 @@ export const createUser = async (req, res, next) => {
     next(error);
   }
 };
-
 // ✅ Get All Users (with pagination)
 export const getUsers = async (req, res, next) => {
   try {
     const { page, limit } = req.query;
 
-    const result = await userService.getUsers({
-      page: Number(page) || 1,
-      limit: Number(limit) || 10,
-    });
+    const result = await userService.getUsers(req.query);
 
     res.status(200).json({
       success: true,
       message: "Users fetched successfully",
-      ...result,
+      data: result.users,
+      meta: {
+        total: result.total,
+        page: result.page,
+        pages: result.pages,
+      },
     });
   } catch (error) {
     next(error);
@@ -54,7 +69,7 @@ export const getUserById = async (req, res, next) => {
 // ✅ Update User
 export const updateUser = async (req, res, next) => {
   try {
-    const allowedFields = ["name", "email"];
+    const allowedFields = ["name", "email", "roleId", "password",'isBlocked'];
 
     const filteredData = {};
 
@@ -79,14 +94,20 @@ export const updateUser = async (req, res, next) => {
 // ✅ Delete User (Soft Delete)
 export const deleteUser = async (req, res, next) => {
   try {
-    if (req.user._id === req.params.id) {
-      throw new ApiError(400, "You cannot perform this action on yourself");
+    const userId = req.params.id;
+
+    if (req.user._id.toString() === userId) {
+      return next(
+        new ApiError(400, "You cannot perform this action on yourself")
+      );
     }
-    await userService.deleteUser(req.params.id);
+
+    const user = await userService.deleteUser(userId);
 
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
+      data: user,
     });
   } catch (error) {
     next(error);

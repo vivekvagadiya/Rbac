@@ -8,14 +8,14 @@ const { validateObjectId } = require("../middleware/validateId.middleware.js");
 router.post(
   "/",
   authenticate,
-  checkPermission("order:create"),
+  checkPermission("order.create"),
   orderController.createOrder,
 );
 
 router.get(
   "/",
   authenticate,
-  checkPermission("order:read"),
+  checkPermission("order.read"),
   orderController.getOrders,
 );
 
@@ -23,15 +23,23 @@ router.put(
   "/:id/status",
   authenticate,
   validateObjectId,
-  checkPermission("order:update"),
+  checkPermission("order.update"),
   orderController.updateOrderStatus,
 );
+
+router.get(
+  "/:id",
+  authenticate,
+  validateObjectId,
+  checkPermission("order.read"),
+  orderController.getOrderById
+)
 
 router.post(
   "/:id/refund",
   authenticate,
   validateObjectId,
-  checkPermission("order:refund"),
+  checkPermission("order.update"),
   orderController.refundOrder,
 );
 module.exports = router;

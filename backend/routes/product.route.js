@@ -7,22 +7,22 @@ const { authenticate } = require("../middleware/auth.middleware.js");
 
 router.post(
   "/",authenticate,
-  checkPermission("product:create"),
+  checkPermission("product.create"),
   productController.createProduct,
 );
-router.get("/",authenticate, checkPermission("product:read"), productController.getProducts);
+router.get("/",authenticate, checkPermission("product.read"), productController.getProducts);
 router.put(
   "/:id",
   validateObjectId,
   authenticate,
-  checkPermission("product:update"),
+  checkPermission("product.update"),
   productController.updateProduct,
 );
 router.delete(
   "/:id",
   validateObjectId,
   authenticate,
-  checkPermission("product:delete"),
+  checkPermission("product.delete"),
   productController.deleteProduct,
 );
 
