@@ -7,7 +7,8 @@ const Login = lazy(() => import("../pages/login/Login"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 const UserPage = lazy(() => import("../pages/User/User"));
 const MainLayout = lazy(() => import("../layouts/MainLayout"));
-const UnAuthorized=lazy(()=>import("../pages/Unauthorized/UnAuthorized"))
+const UnAuthorized = lazy(() => import("../pages/Unauthorized/UnAuthorized"));
+const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 
 export const routes = [
   {
@@ -18,7 +19,7 @@ export const routes = [
   {
     path: "/unauthorized",
     element: UnAuthorized,
-    protected: true,
+    public: true, // ✅ fix
   },
   {
     path: "/",
@@ -32,20 +33,29 @@ export const routes = [
       {
         path: "users",
         element: UserPage,
-        permission: "user:read",
+        protected: true, // ✅ REQUIRED
+        permission: "user.read",
       },
       {
-        path: "permission",
+        path: "permissions",
         element: PermissionPage,
+        protected: true,
+        permission: "permission.read",
       },
       {
         path: "products",
         element: ProductPage,
+        protected: true,
+        permission: "product.read",
       },
       {
         path: "orders",
         element: OrderPage,
+        protected: true,
+        permission: "order.read",
       },
+      { path: "*", element: NotFound },
     ],
   },
+  { path: "*", element: NotFound },
 ];

@@ -7,21 +7,17 @@ const renderRoutes = (routes) => {
   return routes.map((route, index) => {
     const Element = route.element;
 
+    const element = route.protected ? (
+      <ProtectedRoute permission={route.permission}>
+        <Element />
+      </ProtectedRoute>
+    ) : (
+      <Element />
+    );
+
     if (route.children) {
       return (
-        <Route
-          key={index}
-          path={route.path}
-          element={
-            route.protected ? (
-              <ProtectedRoute>
-                <Element />
-              </ProtectedRoute>
-            ) : (
-              <Element />
-            )
-          }
-        >
+        <Route key={index} path={route.path} element={element}>
           {renderRoutes(route.children)}
         </Route>
       );
@@ -32,9 +28,7 @@ const renderRoutes = (routes) => {
         key={index}
         path={route.path}
         index={route.index}
-        element={
-          <Element />
-        }
+        element={element} // ✅ FIX: apply protection here too
       />
     );
   });

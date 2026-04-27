@@ -13,7 +13,7 @@ const usePermission = () => {
   };
 
   const hasModuleAccess = (module) => {
-    return permissionList.some((p) => p.startsWith(module + ":"));
+    return permissionList.some((p) => p.startsWith(module + "."));
   };
 
   return {
