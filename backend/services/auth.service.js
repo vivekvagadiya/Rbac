@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import { generateTokens } from "../utils/generateTokens.js";
 import bcrypt from "bcrypt";
-
+import jwt from "jsonwebtoken";
 export const registerUser = async (data) => {
   const { email, password } = data;
 
@@ -48,8 +48,12 @@ export const loginUser = async (email, password) => {
   if (!isMatch) {
     throw new ApiError(401, "Invalid credentials");
   }
+
   const tokens = generateTokens(user);
+
+  // ✅ FIX HERE
   user.refreshToken = tokens.refreshToken;
+  await user.save();
 
   const safeUser = {
     _id: user._id,
@@ -69,7 +73,7 @@ export const refreshUserToken = async (refreshToken) => {
 
   try {
     decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-  } catch {
+  } catch (err) {
     throw new ApiError(403, "Invalid refresh token");
   }
 
