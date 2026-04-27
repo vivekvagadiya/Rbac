@@ -26,6 +26,12 @@ router.put(
   checkPermission("user.update"),
   userController.updateUser,
 );
+router.post(
+  "/",
+  authenticate,
+  checkPermission("user.create"),
+  userController.createUser,
+);
 
 router.delete(
   "/:id",

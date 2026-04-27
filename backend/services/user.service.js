@@ -1,18 +1,58 @@
 import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
 import ApiError from "../utils/ApiError.js";
+import bcrypt from "bcryptjs";
 
 //  Create User (Admin side)
-export const createUser = async (data) => {
-  const { email } = data;
 
+export const createUser = async (data) => {
+  let { name, email, password, roleId ,isBlocked} = data;
+
+  // =========================
+  // 1. Normalize Input
+  // =========================
+  name = name.trim();
+  email = email.toLowerCase().trim();
+
+  // =========================
+  // 2. Check Duplicate Email
+  // =========================
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw new ApiError(400, "User already exists");
+    throw new ApiError(409, "User already exists");
   }
 
-  const user = await User.create(data);
-  return user;
+  // =========================
+  // 3. Validate Role (RBAC)
+  // =========================
+  const role = await Role.findById(roleId);
+  if (!role) {
+    throw new ApiError(400, "Invalid role selected");
+  }
+
+  // =========================
+  // 4. Hash Password
+  // =========================
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // =========================
+  // 5. Create User
+  // =========================
+  const user = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role: roleId,
+    isBlocked: isBlocked
+  });
+
+  // =========================
+  // 6. Sanitize Response
+  // =========================
+  const userObj = user.toObject();
+  delete userObj.password;
+
+  return userObj;
 };
 
 //  Get All Users (with pagination + filtering)
@@ -104,9 +144,63 @@ export const getUserById = async (userId) => {
 
 //  Update User
 export const updateUser = async (userId, data) => {
+  const updateData = {};
+
+  // =========================
+  // 1. Name
+  // =========================
+  if (data.name) {
+    updateData.name = data.name.trim();
+  }
+
+  // =========================
+  // 2. Email
+  // =========================
+  if (data.email) {
+    const email = data.email.toLowerCase().trim();
+
+    const existingUser = await User.findOne({
+      email,
+      _id: { $ne: userId }, // exclude current user
+    });
+
+    if (existingUser) {
+      throw new ApiError(409, "Email already in use");
+    }
+
+    updateData.email = email;
+  }
+
+  if(data.isBlocked!==undefined){
+    updateData.isBlocked=data.isBlocked;
+  }
+
+  // =========================
+  // 3. Role (RBAC)
+  // =========================
+  if (data.roleId) {
+    const role = await Role.findById(data.roleId);
+    if (!role) {
+      throw new ApiError(400, "Invalid role selected");
+    }
+
+    updateData.role = data.roleId; // 🔥 map roleId → role
+  }
+
+  // =========================
+  // 4. Password (optional)
+  // =========================
+  if (data.password) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    updateData.password = hashedPassword;
+  }
+
+  // =========================
+  // 5. Update User
+  // =========================
   const user = await User.findOneAndUpdate(
     { _id: userId, isDeleted: false },
-    data,
+    updateData,
     { new: true },
   );
 
@@ -114,7 +208,13 @@ export const updateUser = async (userId, data) => {
     throw new ApiError(404, "User not found");
   }
 
-  return user;
+  // =========================
+  // 6. Remove Sensitive Data
+  // =========================
+  const userObj = user.toObject();
+  delete userObj.password;
+
+  return userObj;
 };
 
 //  Soft Delete User

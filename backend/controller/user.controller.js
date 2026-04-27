@@ -1,11 +1,25 @@
 import * as userService from "../services/user.service.js";
 import ApiError from "../utils/ApiError.js";
 
-// ✅ Create User
 export const createUser = async (req, res, next) => {
   try {
+    const { name, email, password, roleId ,isBlocked} = req.body;
+
+    // =========================
+    // 1. Basic Validation (fallback)
+    // =========================
+    if (!name || !email || !password || !roleId ||!isBlocked) {
+      return next(new ApiError(400, "All fields are required"));
+    }
+
+    // =========================
+    // 2. Call Service
+    // =========================
     const user = await userService.createUser(req.body);
 
+    // =========================
+    // 3. Send Response
+    // =========================
     res.status(201).json({
       success: true,
       message: "User created successfully",
@@ -15,7 +29,6 @@ export const createUser = async (req, res, next) => {
     next(error);
   }
 };
-
 // ✅ Get All Users (with pagination)
 export const getUsers = async (req, res, next) => {
   try {
@@ -26,12 +39,12 @@ export const getUsers = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Users fetched successfully",
-      data:result.users,
-      meta:{
+      data: result.users,
+      meta: {
         total: result.total,
         page: result.page,
         pages: result.pages,
-      }
+      },
     });
   } catch (error) {
     next(error);
@@ -56,7 +69,7 @@ export const getUserById = async (req, res, next) => {
 // ✅ Update User
 export const updateUser = async (req, res, next) => {
   try {
-    const allowedFields = ["name", "email"];
+    const allowedFields = ["name", "email", "roleId", "password",'isBlocked'];
 
     const filteredData = {};
 
