@@ -86,3 +86,18 @@ export const refundOrder = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getOrderById=async(req,res,next)=>{
+  try {
+    const {id}=req.params;
+    const order=await orderService.getOrderById(id)
+
+    return res.status(200).json({
+      success:true,
+      data:order,
+    })
+  } catch (error) {
+    next(error)
+    
+  }
+}

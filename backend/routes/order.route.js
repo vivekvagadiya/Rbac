@@ -27,6 +27,14 @@ router.put(
   orderController.updateOrderStatus,
 );
 
+router.get(
+  "/:id",
+  authenticate,
+  validateObjectId,
+  checkPermission("order:read"),
+  orderController.getOrderById
+)
+
 router.post(
   "/:id/refund",
   authenticate,
