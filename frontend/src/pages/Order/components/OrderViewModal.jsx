@@ -52,7 +52,7 @@ const OrderViewModal = ({ open, onClose, order }) => {
           </TableHead>
 
           <TableBody>
-            {order.products?.map((item, index) => (
+            {order?.products?.map((item, index) => (
               <TableRow key={index}>
                 <TableCell>{item.product?.name || "Product"}</TableCell>
                 <TableCell>{item.quantity}</TableCell>

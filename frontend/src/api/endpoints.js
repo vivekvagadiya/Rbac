@@ -15,5 +15,8 @@ export const endpoints={
         createProduct:`${baseUrl}/products`,
         updateProduct:`${baseUrl}/products`,
         deleteProduct:`${baseUrl}/products`,
+    },
+    orders:{
+      getOrders:`${baseUrl}/orders`,  
     }
 }

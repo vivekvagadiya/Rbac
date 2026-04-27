@@ -1,7 +1,7 @@
 import { Typography, Button } from "@mui/material";
 import { HeaderContainer } from "../styles";
 
-const OrderHeader = () => {
+const OrderHeader = ({onRefresh}) => {
   return (
     <HeaderContainer>
       <Typography variant="h5" fontWeight={600}>
@@ -9,7 +9,7 @@ const OrderHeader = () => {
       </Typography>
 
       {/* Future: export / refresh */}
-      <Button variant="contained">Refresh</Button>
+      <Button variant="contained" onClick={onRefresh}>Refresh</Button>
     </HeaderContainer>
   );
 };
