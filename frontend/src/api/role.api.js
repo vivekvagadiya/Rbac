@@ -9,3 +9,24 @@ export const getRoles = async () => {
     return error?.message;
   }
 };
+
+export const createRole = async (data) => {
+  try {
+    const response = await api.post(endpoints.roles.createRole, data);
+    return response?.data;
+  } catch (error) {
+    return error?.message;
+  }
+};
+
+export const updateRole = async (id, data) => {
+  try {
+    const response = await api.put(
+      endpoints.roles.updateRole.replace(":id", id),
+      data,
+    );
+    return response?.data;
+  } catch (error) {
+    return error?.message;
+  }
+};

@@ -5,48 +5,109 @@ import {
   DialogActions,
   Button,
   TextField,
+  Box,
+  Typography,
+  Divider,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import PermissionMatrix from "./PermissionMatrix";
 
 const RoleFormModal = ({ open, onClose, groupedPermissions, role, onSubmit }) => {
-  const [name, setName] = useState("");
-  const [permissions, setPermissions] = useState([]);
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      name: "",
+      permissions: [],
+    },
+  });
 
+  const permissions = watch("permissions");
+
+  // ✅ Reset form when modal opens or role changes
   useEffect(() => {
     if (role) {
-      setName(role.name);
-      setPermissions(role.permissions.map((p) => p._id));
+      reset({
+        name: role.name,
+        permissions: role.permissions.map((p) => p._id),
+      });
+    } else {
+      reset({
+        name: "",
+        permissions: [],
+      });
     }
-  }, [role]);
+  }, [role, open, reset]);
 
-  const handleSubmit = () => {
-    onSubmit({ name, permissions });
+  // ✅ Handle permission change
+  const handlePermissionChange = (updatedPermissions) => {
+    setValue("permissions", updatedPermissions);
+  };
+
+  const submitHandler = (data) => {
+    onSubmit({
+      name: data.name.trim(),
+      permissions: data.permissions,
+    });
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>{role ? "Edit Role" : "Create Role"}</DialogTitle>
+      <DialogTitle>
+        {role ? "Edit Role" : "Create Role"}
+      </DialogTitle>
 
-      <DialogContent>
-        <TextField
-          label="Role Name"
-          fullWidth
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          sx={{ mb: 2 }}
-        />
+      <DialogContent dividers>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          
+          {/* Role Name */}
+          <Controller
+            name="name"
+            control={control}
+            rules={{
+              required: "Role name is required",
+            }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Role Name"
+                fullWidth
+                error={!!errors.name}
+                helperText={errors.name?.message}
+              />
+            )}
+          />
 
-        <PermissionMatrix
-          groupedPermissions={groupedPermissions}
-          selectedPermissions={permissions}
-          onChange={setPermissions}
-        />
+          <Divider />
+
+          {/* Permissions Section */}
+          <Box>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              Permissions
+            </Typography>
+
+            <PermissionMatrix
+              groupedPermissions={groupedPermissions}
+              selectedPermissions={permissions}
+              onChange={handlePermissionChange}
+            />
+          </Box>
+        </Box>
       </DialogContent>
 
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSubmit}>
+
+        <Button
+          variant="contained"
+          onClick={handleSubmit(submitHandler)}
+        >
           Save
         </Button>
       </DialogActions>

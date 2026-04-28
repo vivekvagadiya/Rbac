@@ -10,8 +10,8 @@ export const endpoints = {
     profile: `${baseUrl}/auth/profile`,
     users: `${baseUrl}/users`,
     createUser: `${baseUrl}/users`,
-    updateUser:`${baseUrl}/users/:id`,
-    deleteUser:`${baseUrl}/users/:id`,
+    updateUser: `${baseUrl}/users/:id`,
+    deleteUser: `${baseUrl}/users/:id`,
   },
   product: {
     getProduct: `${baseUrl}/products`,
@@ -27,5 +27,10 @@ export const endpoints = {
   },
   roles: {
     getRoles: `${baseUrl}/roles`,
+    createRole: `${baseUrl}/roles/create`,
+    updateRole: `${baseUrl}/roles/:id`,
   },
+  permissions:{
+    getPermissions:`${baseUrl}/permissions`
+  }
 };
