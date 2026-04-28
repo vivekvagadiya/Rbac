@@ -25,6 +25,7 @@ app.use("/api/roles", require("./routes/role.route"));
 app.use("/api/products", require("./routes/product.route"));
 app.use("/api/users", require("./routes/user.route"));
 app.use("/api/orders", require("./routes/order.route"));
+app.use("/api/permissions",require("./routes/permission.route"));
 // seedPermissions()
 // seedOrders()
 app.use(errorHandler);

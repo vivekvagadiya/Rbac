@@ -26,6 +26,7 @@ export const createRole = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       data: role,
+      message: "Role created successfully",
     });
   } catch (error) {
     next(error);
@@ -65,6 +66,7 @@ export const updateRole = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       data: role,
+      message:"Role updated successfully",
     });
   } catch (error) {
     next(error);
