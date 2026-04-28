@@ -2,8 +2,8 @@ import { Box, Button, MenuItem, TextField } from "@mui/material"
 import { USER_ROLES } from "../../../utils/constants"
 
 
-const UserFilter = ({ filters, setFilters }) => {
-
+const UserFilter = ({ filters, setFilters, roles }) => {
+    const getRoleOptions = roles?.map((item) => ({ label: item.name, value: item?._id })) || []
     return (
         <>
             <Box
@@ -42,9 +42,9 @@ const UserFilter = ({ filters, setFilters }) => {
                     sx={{ minWidth: 150 }}
                 >
                     <MenuItem value="">All</MenuItem>
-                    {Object.entries(USER_ROLES).map(([key, value]) => (
-                        <MenuItem key={key} value={key}>
-                            {value}
+                    {getRoleOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.label}>
+                            {option.label}
                         </MenuItem>
                     ))}
                 </TextField>

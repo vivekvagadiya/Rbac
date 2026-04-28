@@ -23,6 +23,7 @@ import UserTable from "./components/UserTable";
 import UserFilter from "./components/UserFilter";
 import { useDebounce } from "../../hooks/debounce.hook";
 import ConfirmDeleteDialog from "./components/ConfirmDeleteDialog";
+import { getRoles } from "../../api/role.api";
 
 
 const PageContainer = styled(Box)(({ theme }) => ({
@@ -156,6 +157,20 @@ const UserPage = () => {
         }
     };
 
+    const fetchRoles = async () => {
+        try {
+            const res = await getRoles(); // 👉 you implement API
+            // expected: [{ _id, name }]
+            setRoles(res?.data || []);
+        } catch (err) {
+            console.error("Failed to fetch roles", err);
+        }
+    };
+
+    useEffect(() => {
+        fetchRoles();
+    }, [])
+
     return (<>
         <PageContainer sx={{ p: 2 }}>
             {/* Header */}
@@ -169,7 +184,7 @@ const UserPage = () => {
                 </Button>
             </Header>
 
-            <UserFilter filters={filters} setFilters={(val) => { setFilters(val); setPage(0) }} />
+            <UserFilter filters={filters} setFilters={(val) => { setFilters(val); setPage(0) }} roles={roles}/>
 
             {/* Table */}
             <UserTable

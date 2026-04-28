@@ -1,12 +1,13 @@
 import { Box, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { createRole, getRoles, updateRole } from "../../api/role.api";
+import { createRole, deleteRole, getRoles, updateRole } from "../../api/role.api";
 import { groupPermissions } from "./helper";
 
 import RoleTable from "./components/RoleTable";
 import RoleFormModal from "./components/RoleFormModal";
 import { getPermissions } from "../../api/permissions.api";
+import RoleDeleteModal from "./components/RoleDeleteModal";
 
 const RolePage = () => {
     const [roles, setRoles] = useState([]);
@@ -14,6 +15,7 @@ const RolePage = () => {
     const [open, setOpen] = useState(false);
     const [permissions, setPermissions] = useState([])
     const [selectedRole, setSelectedRole] = useState(null);
+    const [delOpen, setDelOpen] = useState(false)
     console.log('selectedRole', selectedRole);
 
     const fetchRoles = async () => {
@@ -26,10 +28,8 @@ const RolePage = () => {
 
             setRoles(roleData);
 
-            // ✅ store permissions
             setPermissions(permissionData);
 
-            // ✅ directly use fresh data (NOT state)
             const grouped = groupPermissions(permissionData);
             setGroupedPermissions(grouped);
 
@@ -61,6 +61,16 @@ const RolePage = () => {
         }
     }
 
+    const handleDelete = async (id) => {
+        try {
+            const response = await deleteRole(id)
+            toast.success(response?.message)
+        } catch (error) {
+            toast.error(error?.message || "failed")
+
+        }
+    }
+
     return (
         <Box sx={{ p: 3 }}>
             <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mb: 2 }}>
@@ -82,6 +92,10 @@ const RolePage = () => {
                     setSelectedRole(role);
                     setOpen(true);
                 }}
+                onDelete={(role) => {
+                    setSelectedRole(role);
+                    setDelOpen(true);
+                }}
             />
 
             <RoleFormModal
@@ -92,6 +106,15 @@ const RolePage = () => {
                 onSubmit={(data) => {
                     handleRoleSubmit(data)
                     setOpen(false);
+                }}
+            />
+            <RoleDeleteModal
+                open={delOpen}
+                onClose={() => setDelOpen(false)}
+                role={selectedRole}
+                onDelete={(id) => {
+                    setDelOpen(false);
+                    handleDelete(id);
                 }}
             />
         </Box>

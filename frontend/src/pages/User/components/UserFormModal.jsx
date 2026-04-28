@@ -38,6 +38,7 @@ const UserFormModal = ({
   onSubmit,
   loading = false,
   initialData = null,
+  roles=[]
 }) => {
   const isEdit = useMemo(() => !!initialData?._id, [initialData]);
   console.log('initialData', initialData);
@@ -55,21 +56,6 @@ const UserFormModal = ({
     mode: "onChange",
   });
 
-  // =========================
-  // 🔥 Roles State + Fetch
-  // =========================
-  const [roles, setRoles] = useState([]);
-
-  const fetchRoles = async () => {
-    try {
-      const res = await getRoles(); // 👉 you implement API
-      // expected: [{ _id, name }]
-      setRoles(res?.data || []);
-    } catch (err) {
-      console.error("Failed to fetch roles", err);
-    }
-  };
-
   useEffect(() => {
     if (open) {
       // reset form
@@ -78,11 +64,6 @@ const UserFormModal = ({
           ? { ...defaultValues, ...initialData, roleId: initialData?.role?._id, password: "" } // don't prefill password
           : defaultValues
       );
-
-      // fetch roles only if not provided via props
-      if (!roles.length) {
-        fetchRoles();
-      }
     }
   }, [open, initialData, reset]);
 

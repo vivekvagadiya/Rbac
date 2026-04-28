@@ -29,8 +29,9 @@ export const endpoints = {
     getRoles: `${baseUrl}/roles`,
     createRole: `${baseUrl}/roles/create`,
     updateRole: `${baseUrl}/roles/:id`,
+    deleteRole:`${baseUrl}/roles/:id`
   },
   permissions:{
-    getPermissions:`${baseUrl}/permissions`
+    getPermissions:`${baseUrl}/permissions`,
   }
 };

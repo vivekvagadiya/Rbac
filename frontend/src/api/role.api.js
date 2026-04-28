@@ -30,3 +30,14 @@ export const updateRole = async (id, data) => {
     return error?.message;
   }
 };
+
+export const deleteRole = async (id) => {
+  try {
+    const response = await api.delete(
+      endpoints.roles.deleteRole.replace(":id", id),
+    );
+    return response?.data;
+  } catch (error) {
+    return error?.message;
+  }
+};
