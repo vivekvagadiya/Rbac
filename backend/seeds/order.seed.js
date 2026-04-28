@@ -20,67 +20,53 @@ const seedOrders = async () => {
     // Optional: clear old orders
     await Order.deleteMany();
 
-    const ordersData = [
-      {
-        user: users[0]._id,
-        products: [
-          {
-            product: products[0]._id,
-            quantity: 2,
-            price: products[0].price || 500,
-          },
-          {
-            product: products[1]._id,
-            quantity: 1,
-            price: products[1].price || 300,
-          },
-        ],
-        status: "pending",
-      },
-      {
-        user: users[1]._id,
-        products: [
-          {
-            product: products[2]._id,
-            quantity: 3,
-            price: products[2].price || 200,
-          },
-        ],
-        status: "shipped",
-      },
-      {
-        user: users[2]._id,
-        products: [
-          {
-            product: products[3]._id,
-            quantity: 1,
-            price: products[3].price || 1000,
-          },
-          {
-            product: products[4]._id,
-            quantity: 2,
-            price: products[4].price || 400,
-          },
-        ],
-        status: "delivered",
-        isRefunded: false,
-      },
+    const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    const statuses = [
+      "pending",
+      "confirmed",
+      "shipped",
+      "delivered",
+      "cancelled",
     ];
 
-    // Calculate totalAmount
-    const finalOrders = ordersData.map((order) => {
-      const totalAmount = order.products.reduce(
-        (acc, item) => acc + item.price * item.quantity,
-        0,
-      );
+    const generateOrders = (count = 30) => {
+      return Array.from({ length: count }).map(() => {
+        const user = getRandom(users);
 
-      return {
-        ...order,
-        totalAmount,
-        createdBy: order.user,
-        updatedBy: order.user,
-      };
-    });
+        // random number of products per order
+        const itemsCount = Math.floor(Math.random() * 3) + 1;
+
+        const selectedProducts = Array.from({ length: itemsCount }).map(() => {
+          const product = getRandom(products);
+
+          return {
+            product: product._id,
+            quantity: Math.floor(Math.random() * 3) + 1,
+            price: product.price || 500,
+          };
+        });
+
+        const totalAmount = selectedProducts.reduce(
+          (acc, item) => acc + item.price * item.quantity,
+          0,
+        );
+
+        const status = getRandom(statuses);
+
+        return {
+          user: user._id,
+          products: selectedProducts,
+          totalAmount,
+          status,
+          isRefunded: status === "delivered" ? false : false,
+          createdBy: user._id,
+          updatedBy: user._id,
+        };
+      });
+    };
+
+    const finalOrders = generateOrders(50);
 
     await Order.insertMany(finalOrders);
 
@@ -93,4 +79,5 @@ const seedOrders = async () => {
 };
 
 // module.exports = seedOrders;
+
 seedOrders();
