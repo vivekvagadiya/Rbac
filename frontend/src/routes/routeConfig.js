@@ -9,6 +9,7 @@ const UserPage = lazy(() => import("../pages/User/User"));
 const MainLayout = lazy(() => import("../layouts/MainLayout"));
 const UnAuthorized = lazy(() => import("../pages/Unauthorized/UnAuthorized"));
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
+const RolePage = lazy(() => import("../pages/Role/RolePage"));
 
 export const routes = [
   {
@@ -53,6 +54,12 @@ export const routes = [
         element: OrderPage,
         protected: true,
         permission: "order.read",
+      },
+      {
+        path: "roles",
+        element: RolePage,
+        protected: true,
+        permission: "role.read",
       },
       { path: "*", element: NotFound },
     ],

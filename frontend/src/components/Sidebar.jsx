@@ -15,10 +15,15 @@ const menuItems = [
     path: "/",
     module: null,
   },
+  // {
+  //   label: "Permission",
+  //   path: "/permission",
+  //   module: "permission",
+  // },
   {
-    label: "Permission",
-    path: "/permission",
-    module: "permission",
+    label: "Roles",
+    path: "/roles",
+    module: "role"
   },
   {
     label: "Users",
@@ -35,6 +40,7 @@ const menuItems = [
     path: "/orders",
     module: "order",
   },
+
 ];
 
 const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
