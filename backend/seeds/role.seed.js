@@ -1,8 +1,9 @@
+require("dotenv").config({path:"../.env"});
 const mongoose = require("mongoose");
 const Role = require("../models/role.model.js");
 const Permission = require("../models/permission.model.js");
 
-const MONGO_URI = "mongodb://localhost:27017/vivek-node";
+const MONGO_URI = process.env.MONGO_URI;
 
 const seedRoles = async () => {
   try {

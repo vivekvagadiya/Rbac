@@ -1,7 +1,8 @@
+require("dotenv").config({path:"../.env"});
 const mongoose = require("mongoose");
 const Permission = require("../models/permission.model.js");
 
-const MONGO_URI = "mongodb://localhost:27017/vivek-node"; // move to .env later
+const MONGO_URI = process.env.MONGO_URI; // move to .env later
 
 const modules = ["user", "role", "product", "order", "category", "permission"];
 const actions = ["create", "read", "update", "delete"];

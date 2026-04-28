@@ -1,12 +1,15 @@
+require("dotenv").config({path:"../.env"});
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const Role = require("../models/role.model.js");
 const User=require('../models/user.model.js')
-const MONGO_URI = "mongodb://localhost:27017/vivek-node"; // use .env in real setup
+const MONGO_URI = process.env.MONGO_URI; // use .env in real setup
+console.log('MONGO_URI',MONGO_URI);
+
 
 const seedUsers = async () => {
   try {
-    await mongoose.connect(MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB Connected");
 
     // Clear old users (optional)

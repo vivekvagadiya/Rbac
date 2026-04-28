@@ -1,7 +1,8 @@
+require("dotenv").config({path:"../.env"});
 const mongoose = require("mongoose");
 const Product = require("../models/product.model.js"); // adjust path
 
-const MONGO_URI = "mongodb://127.0.0.1:27017/vivek-node"; // change
+const MONGO_URI = process.env.MONGO_URI; // change
 
 // Optional: put a valid User _id if you want createdBy
 const USER_ID = "69e87a7b9063082921517b58"; // e.g. "662f1c9e8c1234567890abcd"
