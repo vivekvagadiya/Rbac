@@ -9,7 +9,12 @@ const app = express();
 connectDB();
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend URL
+    origin: [
+      "http://localhost:5173",
+      "rbac-frontend-flame.vercel.app",
+      "rbac-frontend-git-main-vivek0093s-projects.vercel.app",
+      "rbac-frontend-nzb7uojnp-vivek0093s-projects.vercel.app"
+    ], // frontend URL
     credentials: true,
   }),
 );
