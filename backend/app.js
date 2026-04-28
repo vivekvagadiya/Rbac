@@ -11,12 +11,12 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "rbac-frontend-flame.vercel.app",
-      "rbac-frontend-git-main-vivek0093s-projects.vercel.app",
-      "rbac-frontend-nzb7uojnp-vivek0093s-projects.vercel.app"
-    ], // frontend URL
+      "https://rbac-frontend-flame.vercel.app",
+      "https://rbac-frontend-git-main-vivek0093s-projects.vercel.app",
+      "https://rbac-frontend-nzb7uojnp-vivek0093s-projects.vercel.app"
+    ],
     credentials: true,
-  }),
+  })
 );
 
 app.use(express.json());
