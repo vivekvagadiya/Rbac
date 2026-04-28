@@ -41,7 +41,7 @@ const UserFilter = ({ filters, setFilters, roles }) => {
                     }
                     sx={{ minWidth: 150 }}
                 >
-                    <MenuItem value="">All</MenuItem>
+                    <MenuItem value="all">All</MenuItem>
                     {getRoleOptions.map((option) => (
                         <MenuItem key={option.value} value={option.label}>
                             {option.label}
@@ -63,7 +63,7 @@ const UserFilter = ({ filters, setFilters, roles }) => {
                     }
                     sx={{ minWidth: 150 }}
                 >
-                    <MenuItem value="">All</MenuItem>
+                    <MenuItem value="all">All</MenuItem>
                     <MenuItem value="active">Active</MenuItem>
                     <MenuItem value="blocked">Blocked</MenuItem>
                     <MenuItem value="deleted">Deleted</MenuItem>
@@ -75,8 +75,8 @@ const UserFilter = ({ filters, setFilters, roles }) => {
                     onClick={() =>
                         setFilters({
                             search: "",
-                            role: "",
-                            status: "",
+                            role: "all",
+                            status: "all",
                         })
                     }
                 >

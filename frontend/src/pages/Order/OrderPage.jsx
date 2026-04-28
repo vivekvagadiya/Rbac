@@ -13,7 +13,7 @@ import { useDebounce } from "../../hooks/debounce.hook";
 const OrderPage = () => {
     const [filters, setFilters] = useState({
         search: "",
-        status: "",
+        status: "all",
     });
 
     const debouncedSearch = useDebounce(filters.search, 500);
@@ -38,7 +38,7 @@ const OrderPage = () => {
                 page: page + 1,
                 limit: rowsPerPage,
                 ...(debouncedSearch && { search: debouncedSearch }),
-                ...(filters.status && { status: filters.status }),
+                ...(filters.status!=='all' && { status: filters.status }),
             });
 
             setOrders(response?.data || []);
@@ -85,7 +85,7 @@ const OrderPage = () => {
             <OrderHeader
                 onRefresh={() => {
                     fetchOrders();
-                    setFilters({ search: "", status: "" })
+                    setFilters({ search: "", status: "all" })
                 }}
             />
 

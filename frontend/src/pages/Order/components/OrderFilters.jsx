@@ -2,7 +2,7 @@ import { TextField, MenuItem } from "@mui/material";
 import { FiltersContainer } from "../styles";
 
 const statusOptions = [
-  { label: "All", value: "" },
+  { label: "All", value: "all" },
   { label: "Pending", value: "pending" },
   { label: "Confirmed", value: "confirmed" },
   { label: "Shipped", value: "shipped" },

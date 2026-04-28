@@ -63,8 +63,8 @@ const UserPage = () => {
     const [total, setTotal] = useState(0);
     const [filters, setFilters] = useState({
         search: "",
-        role: "",
-        status: "",
+        role: "all",
+        status: "all",
     });
     const debouncedSearch = useDebounce(filters.search, 500);
     const [deleteUser, setDeleteUser] = useState(null);
@@ -76,8 +76,8 @@ const UserPage = () => {
 
             const params = {
                 ...(debouncedSearch && { search: debouncedSearch }),
-                ...(filters.role && { role: filters.role }),
-                ...(filters.status && { status: filters.status }),
+                ...(filters.role!=='all' && { role: filters.role }),
+                ...(filters.status!=='all' && { status: filters.status }),
                 page: page + 1,
                 limit: rowsPerPage,
             };

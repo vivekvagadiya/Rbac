@@ -7,6 +7,8 @@ import {
   TextField,
   MenuItem,
   CircularProgress,
+  Chip,
+  Stack,
 } from "@mui/material";
 import { updateOrderStatus } from "../../../api/orders.api";
 import { toast } from "react-hot-toast";
@@ -18,7 +20,13 @@ const allowedTransitions = {
   delivered: [],
   cancelled: [],
 };
-
+const statusColors = {
+  pending: "default",
+  confirmed: "info",
+  shipped: "warning",
+  delivered: "success",
+  cancelled: "error",
+};
 const UpdateStatusModal = ({ open, onClose, order, onSuccess }) => {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
@@ -107,25 +115,29 @@ const UpdateStatusModal = ({ open, onClose, order, onSuccess }) => {
             </Typography>
 
             {/* No transitions */}
+            {/* Status Options */}
             {transitions.length === 0 ? (
               <Typography sx={{ mt: 2 }} color="text.secondary">
                 No further status updates allowed.
               </Typography>
             ) : (
-              <TextField
-                select
-                fullWidth
-                label="New Status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                sx={{ mt: 2 }}
-              >
+              <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: "wrap" }}>
                 {transitions.map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
-                  </MenuItem>
+                  <Chip
+                    key={s}
+                    label={s.charAt(0).toUpperCase() + s.slice(1)}
+                    clickable
+                    // color={status === s ? "primary" : "default"}
+                    color={statusColors[s] || "default"}
+                    variant={status === s ? "filled" : "outlined"}
+                    onClick={() => setStatus(s)}
+                    sx={{
+                      fontWeight: 500,
+                      cursor: "pointer",
+                    }}
+                  />
                 ))}
-              </TextField>
+              </Stack>
             )}
           </>
         )}
