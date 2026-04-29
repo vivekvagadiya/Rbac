@@ -1,15 +1,29 @@
 import { useState, useCallback } from "react";
-import { Box, Button, Dialog, Typography, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  Typography,
+  CircularProgress,
+  IconButton,
+  Stack,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import { 
+  Close as CloseIcon, 
+  DeleteForever as DeleteIcon, 
+  WarningAmberRounded as WarningIcon 
+} from "@mui/icons-material";
 import { deleteProduct } from "../../../api/product.api";
 import { toast } from "react-hot-toast";
 
-const ProductDeleteModal = ({
-  open,
-  onClose,
-  product,
-  onSuccess,
-}) => {
+const ProductDeleteModal = ({ open, onClose, product, onSuccess }) => {
   const [loading, setLoading] = useState(false);
+  const theme = useTheme();
+  
+  // Checks if the screen is mobile-sized (sm = 600px)
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleDelete = useCallback(async () => {
     if (!product?._id) {
@@ -19,19 +33,12 @@ const ProductDeleteModal = ({
 
     try {
       setLoading(true);
-
       const res = await deleteProduct(product._id);
-
       toast.success(res?.message || "Product deleted successfully");
-
       onClose();
-      onSuccess?.(); // optional chaining (safe execution)
+      onSuccess?.();
     } catch (err) {
-      const message =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to delete product";
-
+      const message = err?.response?.data?.message || err?.message || "Failed to delete product";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -41,54 +48,82 @@ const ProductDeleteModal = ({
   return (
     <Dialog
       open={open}
-      onClose={loading ? undefined : onClose} // prevent close while deleting
+      onClose={loading ? undefined : onClose}
       fullWidth
-      maxWidth="sm"
+      maxWidth="xs" // Smaller width for better desktop appearance
+      // fullScreen={isMobile} // Full screen on mobile for a "Native App" feel
       PaperProps={{
         sx: {
-          borderRadius: 3,
+          borderRadius: isMobile ? 0 : 4,
+          padding: 1,
           backgroundImage: "none",
         },
       }}
     >
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h6" fontWeight={600}>
-          Delete Product
-        </Typography>
+      {/* Header with Close Button */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <IconButton onClick={onClose} disabled={loading} size="small">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
 
-        <Typography sx={{ mt: 2 }}>
-          Are you sure you want to delete{" "}
-          <strong>{product?.name || "this product"}</strong>?
-        </Typography>
-
+      <Box sx={{ px: 4, pb: 4, textAlign: "center" }}>
+        {/* Warning Icon Graphic */}
         <Box
           sx={{
-            mt: 3,
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 1,
+            display: "inline-flex",
+            // p: 1,
+            borderRadius: "50%",
+            bgcolor: "error.lighter", // Ensure your palette has 'lighter' or use 'rgba(211, 47, 47, 0.1)'
+            color: "error.main",
+            mb: 2,
           }}
         >
+          <WarningIcon sx={{ fontSize: 40 }} />
+        </Box>
+
+        <Typography variant="h5" fontWeight={700} gutterBottom>
+          Delete Product?
+        </Typography>
+
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+          You are about to delete <strong>{product?.name || "this item"}</strong>. 
+          This action is permanent and cannot be undone.
+        </Typography>
+
+        {/* Responsive Button Stack */}
+        <Stack 
+          direction={isMobile ? "column-reverse" : "row"} 
+          spacing={2} 
+          sx={{justifyContent:"center"}}
+        >
           <Button
+            fullWidth
             onClick={onClose}
             disabled={loading}
-            variant="outlined"
+            variant="text"
+            sx={{ color: "text.secondary", fontWeight: 600 }}
           >
-            Cancel
+            Cancel, keep it
           </Button>
 
           <Button
+            fullWidth
             variant="contained"
             color="error"
             onClick={handleDelete}
             disabled={loading}
-            startIcon={
-              loading ? <CircularProgress size={16} /> : null
-            }
+            disableElevation
+            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <DeleteIcon />}
+            sx={{ 
+              py: isMobile ? 1.5 : 1, 
+              fontWeight: 700,
+              borderRadius: 2 
+            }}
           >
-            {loading ? "Deleting..." : "Delete"}
+            {loading ? "Deleting..." : "Confirm Delete"}
           </Button>
-        </Box>
+        </Stack>
       </Box>
     </Dialog>
   );

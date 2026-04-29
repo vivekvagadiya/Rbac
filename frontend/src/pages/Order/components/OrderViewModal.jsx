@@ -1,5 +1,8 @@
 import {
   Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Box,
   Typography,
   Table,
@@ -10,19 +13,41 @@ import {
   Button,
   Divider,
   CircularProgress,
+  Grid,
+  IconButton,
+  alpha,
+  styled,
+  Stack,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import OrderStatusChip from "./OrderStatusChip";
 import { getOrderById } from "../../../api/orders.api";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+
+// --- Styled Components ---
+
+const InfoLabel = styled(Typography)(({ theme }) => ({
+  fontSize: "0.75rem",
+  fontWeight: 700,
+  textTransform: "uppercase",
+  color: theme.palette.text.secondary,
+  marginBottom: theme.spacing(0.5),
+}));
+
+const SummaryRow = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "space-between",
+  padding: theme.spacing(1, 0),
+}));
 
 const OrderViewModal = ({ open, onClose, orderId }) => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const fetchOrderDetails = async () => {
-    if (!orderId) return; // ✅ safe check INSIDE function
-
+    if (!orderId) return;
     setLoading(true);
     try {
       const response = await getOrderById(orderId);
@@ -41,88 +66,128 @@ const OrderViewModal = ({ open, onClose, orderId }) => {
   }, [open, orderId]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h6" fontWeight={600}>
-          Order Details
-        </Typography>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      fullWidth 
+      maxWidth="sm"
+      PaperProps={{ sx: { borderRadius: 3 } }}
+    >
+      <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Stack direction="row" spacing={1} sx={{alignItems:"center"}}>
+          <ReceiptLongIcon color="primary" />
+          <Typography variant="h6" fontWeight={700}>Order Invoice</Typography>
+        </Stack>
+        <IconButton onClick={onClose} size="small">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
 
-        {/* 🔄 Loading */}
+      <DialogContent dividers sx={{ p: 0 }}>
         {loading ? (
-          <Box sx={{ textAlign: "center", p: 3 }}>
-            <CircularProgress />
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 10 }}>
+            <CircularProgress size={32} />
+            <Typography variant="caption" sx={{ mt: 2, color: 'text.secondary' }}>Loading details...</Typography>
           </Box>
         ) : !order ? (
-          <Typography sx={{ mt: 2 }} color="text.secondary">
-            No data found
-          </Typography>
+          <Box sx={{ p: 4, textAlign: 'center' }}>
+            <Typography color="text.secondary">No order data available.</Typography>
+          </Box>
         ) : (
-          <>
-            {/* Order Info */}
-            <Box sx={{ mt: 2 }}>
-              <Typography>
-                <strong>Order ID:</strong> {order._id}
-              </Typography>
-              <Typography>
-                <strong>User:</strong> {order.user?.name}
-              </Typography>
-              <Typography sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                <strong>Status:</strong>
-                <OrderStatusChip status={order.status} />
-              </Typography>
-              <Typography>
-                <strong>Date:</strong>{" "}
-                {new Date(order.createdAt).toLocaleString()}
-              </Typography>
+          <Box>
+            {/* Top Meta Info */}
+            <Box sx={{ p: 3, bgcolor: alpha('#f4f6f8', 0.5) }}>
+              <Grid container spacing={3}>
+                <Grid size={{xs:6}}>
+                  <InfoLabel>Customer Name</InfoLabel>
+                  <Typography variant="body2" fontWeight={600}>
+                    {order.user?.name || "Guest Customer"}
+                  </Typography>
+                </Grid>
+                <Grid size={{xs:6}}>
+                  <InfoLabel>Order Date</InfoLabel>
+                  <Typography variant="body2" fontWeight={600}>
+                    {new Date(order.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                  </Typography>
+                </Grid>
+                <Grid size={{xs:6}}>
+                  <InfoLabel>Order ID</InfoLabel>
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace', color: 'primary.main' }}>
+                    #{order._id?.toUpperCase()}
+                  </Typography>
+                </Grid>
+                <Grid size={{xs:6}}>
+                  <InfoLabel>Current Status</InfoLabel>
+                  <OrderStatusChip status={order.status} />
+                </Grid>
+              </Grid>
             </Box>
 
-            <Divider sx={{ my: 2 }} />
-
-            {/* Products */}
-            <Typography fontWeight={600} sx={{ mb: 1 }}>
-              Products
-            </Typography>
-
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Product</TableCell>
-                  <TableCell>Qty</TableCell>
-                  <TableCell>Price</TableCell>
-                  <TableCell>Subtotal</TableCell>
-                </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {order.products?.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{item.product?.name}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                    <TableCell>₹{item.price}</TableCell>
-                    <TableCell>
-                      ₹{item.quantity * item.price}
-                    </TableCell>
+            {/* Items Table */}
+            <Box sx={{ p: 3 }}>
+              <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 2 }}>
+                Line Items
+              </Typography>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ bgcolor: 'grey.50' }}>
+                    <TableCell sx={{ fontWeight: 700 }}>Item</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 700 }}>Qty</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700 }}>Unit Price</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700 }}>Amount</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-
-            <Divider sx={{ my: 2 }} />
-
-            {/* Summary */}
-            <Box sx={{ textAlign: "right" }}>
-              <Typography fontWeight={600}>
-                Total: ₹{order.totalAmount}
-              </Typography>
+                </TableHead>
+                <TableBody>
+                  {order.products?.map((item, index) => (
+                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                      <TableCell>{item.product?.name || "Unknown Product"}</TableCell>
+                      <TableCell align="center">{item.quantity}</TableCell>
+                      <TableCell align="right">₹{item.price?.toLocaleString()}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>
+                        ₹{(item.quantity * item.price)?.toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </Box>
-          </>
-        )}
 
-        {/* Actions */}
-        <Box sx={{ mt: 2, textAlign: "right" }}>
-          <Button onClick={onClose}>Close</Button>
-        </Box>
-      </Box>
+            <Divider />
+
+            {/* Total Summary */}
+            <Box sx={{ p: 3, display: 'flex', justifyContent: 'flex-end' }}>
+              <Box sx={{ width: '100%', maxWidth: 200 }}>
+                <SummaryRow>
+                  <Typography variant="body2" color="text.secondary">Subtotal</Typography>
+                  <Typography variant="body2">₹{order.totalAmount?.toLocaleString()}</Typography>
+                </SummaryRow>
+                <SummaryRow>
+                  <Typography variant="body2" color="text.secondary">Tax (0%)</Typography>
+                  <Typography variant="body2">₹0</Typography>
+                </SummaryRow>
+                <Divider sx={{ my: 1 }} />
+                <SummaryRow>
+                  <Typography fontWeight={800} color="primary.main">Grand Total</Typography>
+                  <Typography fontWeight={800} color="primary.main" variant="h6">
+                    ₹{order.totalAmount?.toLocaleString()}
+                  </Typography>
+                </SummaryRow>
+              </Box>
+            </Box>
+          </Box>
+        )}
+      </DialogContent>
+
+      <DialogActions sx={{ p: 2 }}>
+        <Button 
+          fullWidth 
+          variant="outlined" 
+          onClick={onClose}
+          sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
+        >
+          Close Invoice
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };

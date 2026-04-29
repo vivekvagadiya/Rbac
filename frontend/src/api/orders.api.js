@@ -41,3 +41,12 @@ export const refundOrder = async (id) => {
     return error?.message;
   }
 };
+
+export const getOrderStatusSummary = async () => {
+  try {
+    const response = await api.get(endpoints.orders.getStatusSummary);
+    return response?.data;
+  } catch (error) {
+    return error?.message;
+  }
+};

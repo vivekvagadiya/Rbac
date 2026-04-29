@@ -24,14 +24,18 @@ export const endpoints = {
     getOrderById: `${baseUrl}/orders/:id`,
     updateStatus: `${baseUrl}/orders/:id/status`,
     updateRefund: `${baseUrl}/orders/:id/refund`,
+    getStatusSummary: `${baseUrl}/orders/status-summary`,
   },
   roles: {
     getRoles: `${baseUrl}/roles`,
     createRole: `${baseUrl}/roles/create`,
     updateRole: `${baseUrl}/roles/:id`,
-    deleteRole:`${baseUrl}/roles/:id`
+    deleteRole: `${baseUrl}/roles/:id`,
   },
-  permissions:{
-    getPermissions:`${baseUrl}/permissions`,
-  }
+  permissions: {
+    getPermissions: `${baseUrl}/permissions`,
+  },
+  dashboard: {
+    stats: `${baseUrl}/dashboard/stats`,
+  },
 };

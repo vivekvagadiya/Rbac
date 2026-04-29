@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Stack } from "@mui/material";
+import { Box, Typography, Button, Stack, useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
 import ProductFilters from "./components/ProductFIlters";
 import ProductTable from "./components/ProductTable";
@@ -117,12 +117,40 @@ const ProductPage = () => {
         <Box sx={{ p: 3 }}>
             {/* Header */}
             <Stack
-                direction="row"
-                sx={{ mb: 2, justifyContent: "space-between", alignItems: 'center' }}
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2} // Adds consistent gap when stacked
+                sx={{
+                    mb: 4, // Increased margin for better whitespace
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", sm: "center" }, // Align left on mobile, center on desktop
+                }}
             >
-                <Typography variant="h5">Products</Typography>
+                <Box>
+                    <Typography
+                        variant="h4" // Slightly larger for better hierarchy
+                        fontWeight={700}
+                        letterSpacing="-0.02em"
+                    >
+                        Products
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Manage and monitor your inventory
+                    </Typography>
+                </Box>
 
-                <Button variant="contained" onClick={handleAdd}>
+                <Button
+                    variant="contained"
+                    onClick={handleAdd}
+                    disableElevation // Modern, flatter design
+                    size="small"
+                    sx={{
+                        px: 3,
+                        py: 1,
+                        borderRadius: 2,
+                        whiteSpace: "nowrap",
+                        width: { xs: "100%", sm: "auto" }, // Full width button on mobile
+                    }}
+                >
                     Add Product
                 </Button>
             </Stack>
