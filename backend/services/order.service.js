@@ -235,3 +235,31 @@ export const getOrderById = async (id) => {
 
   return order;
 };
+
+export const getOrderStatusSummary = async () => {
+  const summary = await Order.aggregate([
+    {
+      $group: {
+        _id: "$status",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const result = {
+    pending: 0,
+    confirmed: 0,
+    shipped: 0,
+    delivered: 0,
+    cancelled: 0,
+  };
+
+  // Map aggregation result → object
+  summary.forEach((item) => {
+    if (result.hasOwnProperty(item._id)) {
+      result[item._id] = item.count;
+    }
+  });
+
+  return result;
+};

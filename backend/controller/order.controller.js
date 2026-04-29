@@ -101,3 +101,16 @@ export const getOrderById=async(req,res,next)=>{
     
   }
 }
+
+export const getOrderStatusSummaryController = async (req, res, next) => {
+  try {
+    const data = await orderService.getOrderStatusSummary();
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

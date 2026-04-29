@@ -19,6 +19,12 @@ router.get(
   orderController.getOrders,
 );
 
+router.get(
+  "/status-summary",
+  authenticate,
+  checkPermission("order.read"),
+  orderController.getOrderStatusSummaryController
+)
 router.put(
   "/:id/status",
   authenticate,
@@ -42,4 +48,5 @@ router.post(
   checkPermission("order.update"),
   orderController.refundOrder,
 );
+
 module.exports = router;

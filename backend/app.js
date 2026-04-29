@@ -13,10 +13,10 @@ app.use(
       "http://localhost:5173",
       "https://rbac-frontend-flame.vercel.app",
       "https://rbac-frontend-git-main-vivek0093s-projects.vercel.app",
-      "https://rbac-frontend-nzb7uojnp-vivek0093s-projects.vercel.app"
+      "https://rbac-frontend-nzb7uojnp-vivek0093s-projects.vercel.app",
     ],
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());
@@ -25,7 +25,8 @@ app.use("/api/roles", require("./routes/role.route"));
 app.use("/api/products", require("./routes/product.route"));
 app.use("/api/users", require("./routes/user.route"));
 app.use("/api/orders", require("./routes/order.route"));
-app.use("/api/permissions",require("./routes/permission.route"));
+app.use("/api/permissions", require("./routes/permission.route"));
+app.use("/api/dashboard", require("./routes/dashboard.route"));
 // seedPermissions()
 // seedOrders()
 app.use(errorHandler);
