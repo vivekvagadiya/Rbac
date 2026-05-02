@@ -18,6 +18,7 @@ import {
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import ShieldRoundedIcon from "@mui/icons-material/ShieldRounded";
+import usePermission from "../../../hooks/permission.hook";
 
 // --- Styled Components ---
 
@@ -66,6 +67,7 @@ const RoleName = styled(Typography)(({ theme }) => ({
 // --- Main Component ---
 
 const RoleTable = ({ roles = [], onEdit, onDelete, loading }) => {
+  const {hasPermission}=usePermission();
   return (
     <StyledTableContainer component={Paper} elevation={0}>
       <Table>
@@ -132,13 +134,13 @@ const RoleTable = ({ roles = [], onEdit, onDelete, loading }) => {
                   <TableCell align="right">
                     <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
                       <Tooltip title="Edit Role" arrow>
-                        <ActionButton onClick={() => onEdit(role)}>
+                        <ActionButton onClick={() => onEdit(role)} disabled={!hasPermission('role.update')}>
                           <EditRoundedIcon fontSize="small" />
                         </ActionButton>
                       </Tooltip>
 
                       <Tooltip title="Delete Role" arrow>
-                        <ActionButton variant="error" onClick={() => onDelete(role)}>
+                        <ActionButton variant="error" onClick={() => onDelete(role)} disabled={!hasPermission("role.delete")}>
                           <DeleteOutlineRoundedIcon fontSize="small" />
                         </ActionButton>
                       </Tooltip>

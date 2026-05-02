@@ -8,6 +8,7 @@ import RoleTable from "./components/RoleTable";
 import RoleFormModal from "./components/RoleFormModal";
 import { getPermissions } from "../../api/permissions.api";
 import RoleDeleteModal from "./components/RoleDeleteModal";
+import usePermission from "../../hooks/permission.hook";
 
 const Header = styled(Box)(({ theme }) => ({
     display: "flex",
@@ -29,8 +30,8 @@ const RolePage = () => {
     const [open, setOpen] = useState(false);
     const [permissions, setPermissions] = useState([])
     const [selectedRole, setSelectedRole] = useState(null);
-    const [delOpen, setDelOpen] = useState(false)
-    console.log('selectedRole', selectedRole);
+    const [delOpen, setDelOpen] = useState(false);
+    const { hasPermission } = usePermission();  
 
     const fetchRoles = async () => {
         try {
@@ -93,15 +94,18 @@ const RolePage = () => {
         <Box sx={{ p: 3 }}>
             <Header>
                 <Typography variant="h6">Role</Typography>
-                <Button
-                    variant="contained"
-                    onClick={() => {
-                        setSelectedRole(null);
-                        setOpen(true);
-                    }}
-                >
-                    Create Role
-                </Button>
+                {hasPermission('role.create') && (
+
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            setSelectedRole(null);
+                            setOpen(true);
+                        }}
+                    >
+                        Create Role
+                    </Button>
+                )}
             </Header>
 
             <RoleTable

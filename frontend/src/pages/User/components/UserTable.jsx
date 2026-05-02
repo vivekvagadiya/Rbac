@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteIcon from "@mui/icons-material/Delete";
+import usePermission from "../../../hooks/permission.hook";
 
 // --- Styled Components ---
 
@@ -74,6 +75,7 @@ const UserTable = ({
     handleEdit,
     handleDelete,
 }) => {
+    const {hasPermission}=usePermission()
     return (
         <Box sx={{ width: "100%" }}>
             <RootContainer elevation={0}>
@@ -150,13 +152,13 @@ const UserTable = ({
                                         <TableCell align="center">
                                             <Stack direction="row" sx={{justifyContent:"center"}}>
                                                 <Tooltip title="Edit User">
-                                                    <ActionButton size="small" onClick={() => handleEdit(user)}>
+                                                    <ActionButton size="small" onClick={() => handleEdit(user)} disabled={!hasPermission("user.update")}>
                                                         <EditDocumentIcon fontSize="inherit" />
                                                     </ActionButton>
                                                 </Tooltip>
 
                                                 <Tooltip title="Delete User">
-                                                    <ActionButton size="small" color="error" onClick={() => handleDelete(user)}>
+                                                    <ActionButton size="small" color="error" onClick={() => handleDelete(user)} disabled={!hasPermission("user.delete")}>
                                                         <DeleteIcon fontSize="inherit" />
                                                     </ActionButton>
                                                 </Tooltip>

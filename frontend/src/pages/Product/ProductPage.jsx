@@ -6,6 +6,7 @@ import ProductFormModal from "./components/ProductFormModal";
 import toast from "react-hot-toast";
 import { getProducts } from "../../api/product.api";
 import ProductDeleteModal from "./components/ProductDeleteModal";
+import usePermission from "../../hooks/permission.hook";
 
 const ProductPage = () => {
     const [products, setProducts] = useState([]);
@@ -25,6 +26,7 @@ const ProductPage = () => {
     });
 
     const [debouncedSearch, setDebouncedSearch] = useState("");
+    const { hasPermission } = usePermission();
 
 
     // 🔍 Debounce search
@@ -142,6 +144,7 @@ const ProductPage = () => {
                     variant="contained"
                     onClick={handleAdd}
                     disableElevation // Modern, flatter design
+                    disabled={!hasPermission("product.create")}
                     size="small"
                     sx={{
                         px: 3,

@@ -19,6 +19,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import usePermission from "../../../hooks/permission.hook";
 
 // --- Styled Components ---
 
@@ -53,6 +54,7 @@ const ProductTable = ({
   loading = false,
 }) => {
   const isEmpty = !loading && products.length === 0;
+  const {hasPermission}=usePermission();
 
   return (
     <Paper 
@@ -159,12 +161,12 @@ const ProductTable = ({
 
                   <TableCell align="right" sx={{display:"flex"}}>
                     <Tooltip title="Edit Product">
-                      <ActionButton size="small" onClick={() => onEdit(row)}>
+                      <ActionButton size="small" onClick={() => onEdit(row)} disabled={!hasPermission("product.update")}>
                         <EditIcon fontSize="inherit" />
                       </ActionButton>
                     </Tooltip>
                     <Tooltip title="Delete Product">
-                      <ActionButton size="small" color="error" onClick={() => onDelete(row)}>
+                      <ActionButton size="small" color="error" onClick={() => onDelete(row)} disabled={!hasPermission("product.delete")}>
                         <DeleteIcon fontSize="inherit" />
                       </ActionButton>
                     </Tooltip>

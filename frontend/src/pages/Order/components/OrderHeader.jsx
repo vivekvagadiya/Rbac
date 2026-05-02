@@ -17,12 +17,12 @@ const LiveIndicator = styled(Box)(({ theme }) => ({
 
 const OrderHeader = ({ onRefresh, loading }) => {
   return (
-    <Stack 
-      direction="row" 
-      sx={{ mb: 3, mt: 1,justifyContent:"space-between",alignItems:'center' }}
+    <Stack
+      direction="row"
+      sx={{ mb: 3, mt: 1, justifyContent: "space-between", alignItems: 'center' }}
     >
       <Box>
-        <Stack direction="row" sx={{alignItems:'center'}} spacing={1}>
+        <Stack direction="row" sx={{ alignItems: 'center' }} spacing={1}>
           <Typography variant="h4" fontWeight={800} color="text.primary" letterSpacing="-0.5px">
             Orders
           </Typography>
@@ -72,26 +72,22 @@ const OrderHeader = ({ onRefresh, loading }) => {
           onClick={onRefresh}
           disabled={loading}
           startIcon={
-            <RefreshRoundedIcon 
-              sx={{ 
+            <RefreshRoundedIcon
+              sx={{
                 animation: loading ? "spin 2s linear infinite" : "none",
                 "@keyframes spin": {
                   "0%": { transform: "rotate(0deg)" },
                   "100%": { transform: "rotate(360deg)" },
                 }
-              }} 
+              }}
             />
           }
           sx={{
-            borderRadius: 3,
             px: 3,
-            textTransform: "none",
-            fontWeight: 800,
-            background: "linear-gradient(45deg, #6366f1 30%, #818cf8 90%)",
-            boxShadow: "0 8px 16px -4px rgba(99, 102, 241, 0.5)",
-            "&:hover": {
-              boxShadow: "0 12px 20px -6px rgba(99, 102, 241, 0.6)",
-            }
+            py: 1,
+            borderRadius: 2,
+            whiteSpace: "nowrap",
+            width: { xs: "100%", sm: "auto" }, // Full width button on mobile
           }}
         >
           {loading ? "Syncing..." : "Refresh Feed"}

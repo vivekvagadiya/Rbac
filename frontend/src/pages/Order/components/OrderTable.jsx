@@ -22,6 +22,7 @@ import ReplyIcon from "@mui/icons-material/Reply";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 
 import OrderStatusChip from "./OrderStatusChip";
+import usePermission from "../../../hooks/permission.hook";
 
 // --- Styled Components ---
 
@@ -55,14 +56,15 @@ const OrderTable = ({
   handleChangeRowsPerPage,
   total,
 }) => {
+  const { hasPermission } = usePermission()
   return (
-    <Paper 
-      elevation={0} 
-      sx={{ 
-        borderRadius: 3, 
-        border: "1px solid", 
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: 3,
+        border: "1px solid",
         borderColor: "divider",
-        overflow: "hidden" 
+        overflow: "hidden"
       }}
     >
       <TableContainer sx={{ minHeight: 400 }}>
@@ -114,7 +116,7 @@ const OrderTable = ({
                     <TableCell>
                       <Tooltip title={order._id} arrow>
                         <Typography variant="body2" fontWeight={700} sx={{ cursor: 'help' }}>
-                          #{order._id.substring(order._id.length - 6).toUpperCase()}
+                          {order?._id}
                         </Typography>
                       </Tooltip>
                     </TableCell>
@@ -157,7 +159,7 @@ const OrderTable = ({
                         {/* View */}
                         <Tooltip title="View Details">
                           <IconButton size="small" onClick={() => openView(order)}>
-                            <VisibilityIcon fontSize="small" />
+                            <VisibilityIcon fontSize="small" color="success" />
                           </IconButton>
                         </Tooltip>
 
@@ -167,7 +169,7 @@ const OrderTable = ({
                             <IconButton
                               size="small"
                               onClick={() => openStatus(order)}
-                              disabled={isDelivered || isCancelled}
+                              disabled={isDelivered || isCancelled || !hasPermission("order.update")}
                               color="primary"
                             >
                               <EditIcon fontSize="small" />
@@ -182,7 +184,7 @@ const OrderTable = ({
                               size="small"
                               color="error"
                               onClick={() => openRefund(order)}
-                              disabled={!isDelivered || order.isRefunded}
+                              disabled={!isDelivered || order.isRefunded ||!hasPermission("order.update")}
                             >
                               <ReplyIcon fontSize="small" />
                             </IconButton>
