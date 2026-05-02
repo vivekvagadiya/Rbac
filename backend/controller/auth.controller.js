@@ -8,6 +8,8 @@ export const register = async (req, res, next) => {
       success: true,
       data: user,
     });
+
+    return user
   } catch (error) {
     next(error);
   }
@@ -32,6 +34,8 @@ export const login = async (req, res, next) => {
         refreshToken,
       },
     });
+
+    return safeUser
   } catch (error) {
     next(error);
   }

@@ -15,7 +15,10 @@ export const createRole = async (req, res, next) => {
       });
     }
 
-    if (permissions && !permissions.every(id => mongoose.Types.ObjectId.isValid(id))) {
+    if (
+      permissions &&
+      !permissions.every((id) => mongoose.Types.ObjectId.isValid(id))
+    ) {
       return res.status(400).json({
         message: "Invalid permission IDs",
       });
@@ -23,11 +26,12 @@ export const createRole = async (req, res, next) => {
 
     const role = await roleService.createRole({ name, permissions });
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       data: role,
       message: "Role created successfully",
     });
+    return role;
   } catch (error) {
     next(error);
   }
@@ -63,11 +67,12 @@ export const updateRole = async (req, res, next) => {
 
     const role = await roleService.updateRole(id, { name, permissions });
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: role,
-      message:"Role updated successfully",
+      message: "Role updated successfully",
     });
+    return role;
   } catch (error) {
     next(error);
   }
@@ -78,16 +83,17 @@ export const deleteRole = async (req, res, next) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid role ID" });
+      return { status: 400, message: "Invalid role ID" };
     }
 
     const result = await roleService.deleteRole(id);
 
-    return res.status(200).json({
+    return {
+      status: 200,
       success: true,
       message: result.message,
-    });
+    };
   } catch (error) {
-    next(error);
+    throw error;
   }
 };

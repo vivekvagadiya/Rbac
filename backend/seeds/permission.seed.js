@@ -4,7 +4,7 @@ const Permission = require("../models/permission.model.js");
 
 const MONGO_URI = process.env.MONGO_URI; // move to .env later
 
-const modules = ["user", "role", "product", "order", "category", "permission"];
+const modules = ["user", "role", "product", "order", "category", "permission","activity"];
 const actions = ["create", "read", "update", "delete"];
 
 const seedPermissions = async () => {

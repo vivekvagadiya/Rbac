@@ -7,10 +7,11 @@ export const createOrder = async (req, res, next) => {
       req.user._id
     );
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       data: order,
     });
+    return order
   } catch (error) {
     next(error);
   }
@@ -60,10 +61,11 @@ export const updateOrderStatus = async (req, res, next) => {
       req.user._id
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: order,
     });
+    return order
   } catch (error) {
     next(error);
   }
@@ -78,10 +80,11 @@ export const refundOrder = async (req, res, next) => {
       req.user._id
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: order,
     });
+    return order
   } catch (error) {
     next(error);
   }

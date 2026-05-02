@@ -8,7 +8,7 @@ export const createUser = async (req, res, next) => {
     // =========================
     // 1. Basic Validation (fallback)
     // =========================
-    if (!name || !email || !password || !roleId ||!isBlocked) {
+    if (!name || !email || !password || !roleId ||typeof isBlocked!=='boolean') {
       return next(new ApiError(400, "All fields are required"));
     }
 
@@ -25,6 +25,7 @@ export const createUser = async (req, res, next) => {
       message: "User created successfully",
       data: user,
     });
+    return user;
   } catch (error) {
     next(error);
   }
@@ -86,6 +87,8 @@ export const updateUser = async (req, res, next) => {
       message: "User updated successfully",
       data: user,
     });
+
+    return user;
   } catch (error) {
     next(error);
   }
@@ -130,6 +133,8 @@ export const assignRoleToUser = async (req, res, next) => {
       message: "Role assigned successfully",
       data: user,
     });
+
+    return user;
   } catch (error) {
     next(error);
   }
@@ -153,6 +158,8 @@ export const toggleBlockUser = async (req, res, next) => {
         : "User unblocked successfully",
       data: user,
     });
+
+    return user
   } catch (error) {
     next(error);
   }

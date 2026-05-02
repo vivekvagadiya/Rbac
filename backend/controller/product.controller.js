@@ -27,7 +27,7 @@ export const getProducts = async (req, res, next) => {
  */
 export const createProduct = async (req, res, next) => {
   try {
-    let { name, description, price, category, stock,isActive } = req.body;
+    let { name, description, price, category, stock, isActive } = req.body;
 
     // Validation
     if (!name || !name.trim() || price == null || !category) {
@@ -53,14 +53,15 @@ export const createProduct = async (req, res, next) => {
         stock: stock ?? 0,
         isActive: isActive ?? true,
       },
-      req.user._id
+      req.user._id,
     );
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       data: product,
-      message:"Product created successfully"
+      message: "Product created successfully",
     });
+    return product;
   } catch (error) {
     next(error);
   }
@@ -80,7 +81,14 @@ export const updateProduct = async (req, res, next) => {
       });
     }
 
-    const allowedFields = ["name", "description", "price", "category", "stock", "isActive"];
+    const allowedFields = [
+      "name",
+      "description",
+      "price",
+      "category",
+      "stock",
+      "isActive",
+    ];
 
     const updateData = {};
 
@@ -119,13 +127,14 @@ export const updateProduct = async (req, res, next) => {
     const updatedProduct = await productService.updateProduct(
       id,
       updateData,
-      req.user._id
+      req.user._id,
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: updatedProduct,
     });
+    return updatedProduct;
   } catch (error) {
     next(error);
   }
@@ -145,12 +154,9 @@ export const deleteProduct = async (req, res, next) => {
       });
     }
 
-    const result = await productService.deleteProduct(
-      id,
-      req.user._id
-    );
+    const result = await productService.deleteProduct(id, req.user._id);
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: result.message, //  take from service
     });
