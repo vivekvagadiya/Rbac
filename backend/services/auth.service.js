@@ -115,7 +115,7 @@ export const logoutUser = async (userId) => {
 export const getUserData = async (userId) => {
   const user = await User.findOne({ _id: userId }).populate({
     path: "role",
-    populate: { path: "permissions" },
+    populate: { path: "permissions" ,select:"name module"},
   });
 
   if (!user) {
