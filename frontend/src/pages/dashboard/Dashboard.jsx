@@ -23,7 +23,7 @@ const Dashboard = () => {
           <RecentOrders />
         </Grid>
         <Grid size={{xs:12,sm:4}}>
-          {/* <ActivityLogs /> */}
+          <ActivityLogs />
         </Grid>
       </Grid>
     </Box>

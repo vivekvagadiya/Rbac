@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, styled, Typography } from "@mui/material";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createRole, deleteRole, getRoles, updateRole } from "../../api/role.api";
@@ -9,8 +9,22 @@ import RoleFormModal from "./components/RoleFormModal";
 import { getPermissions } from "../../api/permissions.api";
 import RoleDeleteModal from "./components/RoleDeleteModal";
 
+const Header = styled(Box)(({ theme }) => ({
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+
+    [theme.breakpoints.down("sm")]: {
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: "10px",
+    },
+}));
+
 const RolePage = () => {
     const [roles, setRoles] = useState([]);
+    const [loading, setLoading] = useState(false)
     const [groupedPermissions, setGroupedPermissions] = useState({});
     const [open, setOpen] = useState(false);
     const [permissions, setPermissions] = useState([])
@@ -20,6 +34,7 @@ const RolePage = () => {
 
     const fetchRoles = async () => {
         try {
+            setLoading(true)
             const roleRes = await getRoles();
             const permissionRes = await getPermissions();
 
@@ -35,6 +50,8 @@ const RolePage = () => {
 
         } catch {
             toast.error("failed to fetch roles");
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -63,7 +80,8 @@ const RolePage = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await deleteRole(id)
+            const response = await deleteRole(id);
+            fetchRoles();
             toast.success(response?.message)
         } catch (error) {
             toast.error(error?.message || "failed")
@@ -73,10 +91,10 @@ const RolePage = () => {
 
     return (
         <Box sx={{ p: 3 }}>
-            <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mb: 2 }}>
+            <Header>
+                <Typography variant="h6">Role</Typography>
                 <Button
                     variant="contained"
-                    size="small"
                     onClick={() => {
                         setSelectedRole(null);
                         setOpen(true);
@@ -84,10 +102,11 @@ const RolePage = () => {
                 >
                     Create Role
                 </Button>
-            </Box>
+            </Header>
 
             <RoleTable
                 roles={roles}
+                loading={loading}
                 onEdit={(role) => {
                     setSelectedRole(role);
                     setOpen(true);

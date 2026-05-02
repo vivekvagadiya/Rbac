@@ -1,4 +1,5 @@
 import api from "./axios";
+import { endpoints } from "./endpoints";
 
 export const getDashboardStats = async () => {
   try {
@@ -6,5 +7,16 @@ export const getDashboardStats = async () => {
     return response.data;
   } catch (error) {
     return error?.response;
+  }
+};
+
+export const getActivityLog = async (params) => {
+  try {
+    const response = await api.get(endpoints.dashboard.activityStats, {
+      params,
+    });
+    return response?.data;
+  } catch (error) {
+    return error?.message;
   }
 };

@@ -42,7 +42,7 @@ const OrderStatusChart = () => {
       {/* Header Section */}
       <Stack direction="row" sx={{justifyContent:"space-between",alignItems:'center'}} mb={3}>
         <Box>
-          <Typography variant="h6" fontWeight={700}>
+          <Typography variant="h6" sx={{fontWeight:800}}>
             Order Status
           </Typography>
           <Typography variant="body2" color="text.secondary">

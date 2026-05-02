@@ -37,5 +37,6 @@ export const endpoints = {
   },
   dashboard: {
     stats: `${baseUrl}/dashboard/stats`,
+    activityStats:`${baseUrl}/activity`
   },
 };

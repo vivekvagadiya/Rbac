@@ -74,7 +74,7 @@ const RecentOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await getOrders({ page: 1, limit: 5 });
+      const response = await getOrders({ page: 1, limit: 10 });
       setOrders(response?.data || []);
     } catch (error) {
       toast.error(error?.message || "Failed to fetch orders");
@@ -87,8 +87,8 @@ const RecentOrders = () => {
 
   return (
     <DashboardPaper>
-      <Box sx={{ p: 2.5 }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: "1.1rem" }}>
+      <Box sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ fontWeight: 800}}>
           Recent Orders
         </Typography>
       </Box>
