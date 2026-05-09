@@ -4,10 +4,13 @@ const roleController = require("../controller/role.controller.js");
 const { authenticate } = require("../middleware/auth.middleware.js");
 const { validateObjectId } = require("../middleware/validateId.middleware.js");
 const { withActivityLog } = require("../utils/withActivityLog.js");
+const { validate } = require("../middleware/validation.middleware.js");
+const { deleteRoleSchema, updateRoleSchema, createRoleSchema } = require("../validators/role.validation.js");
 
 router.post(
   "/create",
   authenticate,
+  validate(createRoleSchema),
   withActivityLog(roleController.createRole, (req, result) => ({
     action: "CREATE_ROLE",
     resource: "ROLE",
@@ -21,8 +24,8 @@ router.post(
 router.get("/", authenticate, roleController.getRoles);
 router.delete(
   "/:id",
-  validateObjectId,
   authenticate,
+  validate(deleteRoleSchema),
   withActivityLog(roleController.deleteRole, (req) => ({
     action: "DELETE_ROLE",
     resource: "ROLE",
@@ -32,8 +35,8 @@ router.delete(
 );
 router.put(
   "/:id",
-  validateObjectId,
   authenticate,
+  validate(updateRoleSchema),
   withActivityLog(roleController.updateRole, (req, result) => ({
     action: "UPDATE_ROLE",
     resource: "ROLE",

@@ -5,25 +5,6 @@ export const createRole = async (req, res, next) => {
   try {
     const { name, permissions } = req.body;
 
-    if (!name || !name.trim()) {
-      return res.status(400).json({ message: "Role name is required" });
-    }
-
-    if (permissions && !Array.isArray(permissions)) {
-      return res.status(400).json({
-        message: "Permissions must be an array",
-      });
-    }
-
-    if (
-      permissions &&
-      !permissions.every((id) => mongoose.Types.ObjectId.isValid(id))
-    ) {
-      return res.status(400).json({
-        message: "Invalid permission IDs",
-      });
-    }
-
     const role = await roleService.createRole({ name, permissions });
 
     res.status(201).json({
@@ -55,16 +36,6 @@ export const updateRole = async (req, res, next) => {
     const { id } = req.params;
     const { name, permissions } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid role ID" });
-    }
-
-    if (!name && !permissions) {
-      return res.status(400).json({
-        message: "Provide at least one field to update",
-      });
-    }
-
     const role = await roleService.updateRole(id, { name, permissions });
 
     res.status(200).json({
@@ -81,10 +52,6 @@ export const updateRole = async (req, res, next) => {
 export const deleteRole = async (req, res, next) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return { status: 400, message: "Invalid role ID" };
-    }
 
     const result = await roleService.deleteRole(id);
 
