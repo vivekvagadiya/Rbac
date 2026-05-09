@@ -55,11 +55,10 @@ export const deleteRole = async (req, res, next) => {
 
     const result = await roleService.deleteRole(id);
 
-    return {
-      status: 200,
+    return res.status(200).json({
       success: true,
       message: result.message,
-    };
+    });
   } catch (error) {
     throw error;
   }
