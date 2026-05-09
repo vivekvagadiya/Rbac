@@ -24,6 +24,7 @@ import UserFilter from "./components/UserFilter";
 import { useDebounce } from "../../hooks/debounce.hook";
 import ConfirmDeleteDialog from "./components/ConfirmDeleteDialog";
 import { getRoles } from "../../api/role.api";
+import usePermission from "../../hooks/permission.hook";
 
 
 const PageContainer = styled(Box)(({ theme }) => ({
@@ -69,6 +70,7 @@ const UserPage = () => {
     const debouncedSearch = useDebounce(filters.search, 500);
     const [deleteUser, setDeleteUser] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
+    const { hasPermission } = usePermission();
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -76,8 +78,8 @@ const UserPage = () => {
 
             const params = {
                 ...(debouncedSearch && { search: debouncedSearch }),
-                ...(filters.role!=='all' && { role: filters.role }),
-                ...(filters.status!=='all' && { status: filters.status }),
+                ...(filters.role !== 'all' && { role: filters.role }),
+                ...(filters.status !== 'all' && { status: filters.status }),
                 page: page + 1,
                 limit: rowsPerPage,
             };
@@ -178,13 +180,15 @@ const UserPage = () => {
                 <Typography variant="h6" fontWeight={600}>
                     User Management
                 </Typography>
+                {hasPermission("user.create") && (
 
-                <Button variant="contained" onClick={handleCreate}>
-                    Create User
-                </Button>
+                    <Button variant="contained" onClick={handleCreate}>
+                        Create User
+                    </Button>
+                )}
             </Header>
 
-            <UserFilter filters={filters} setFilters={(val) => { setFilters(val); setPage(0) }} roles={roles}/>
+            <UserFilter filters={filters} setFilters={(val) => { setFilters(val); setPage(0) }} roles={roles} />
 
             {/* Table */}
             <UserTable
