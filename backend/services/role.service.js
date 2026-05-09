@@ -1,6 +1,6 @@
 import Role from "../models/role.model.js";
 import Permission from "../models/permission.model.js";
-import ApiError from "../utils/ApiError.js";
+import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
 
 // CREATE ROLE
 export const createRole = async (data) => {
@@ -17,7 +17,7 @@ export const createRole = async (data) => {
     });
 
     if (validPermissions.length !== permissions.length) {
-      throw new ApiError(400, "Some permissions are invalid");
+      throw new ValidationError("Some permissions are invalid");
     }
   }
 
@@ -38,7 +38,7 @@ export const getRoles = async () => {
 export const updateRole = async (id, data) => {
   const role = await Role.findById(id);
   if (!role) {
-    throw new ApiError(404, "Role not found");
+    throw new NotFoundError("Role not found");
   }
 
   if (data.name) {
@@ -54,7 +54,7 @@ export const updateRole = async (id, data) => {
     });
 
     if (validPermissions.length !== data.permissions.length) {
-      throw new ApiError(400, "Some permissions are invalid");
+      throw new ValidationError("Some permissions are invalid");
     }
   }
 
@@ -72,7 +72,7 @@ export const updateRole = async (id, data) => {
 export const deleteRole = async (id) => {
   const role = await Role.findById(id);
   if (!role) {
-    throw new ApiError(404, "Role not found");
+    throw new NotFoundError("Role not found");
   }
 
   if (role.name === "admin") {

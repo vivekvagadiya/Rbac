@@ -1,5 +1,5 @@
 import Product from "../models/product.model.js";
-import ApiError from "../utils/ApiError.js";
+import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
 
 /**
  * GET PRODUCTS (Pagination)
@@ -59,7 +59,7 @@ export const createProduct = async (data, userId) => {
       updatedBy: userId,
     });
   } catch (err) {
-    throw new ApiError(400, err.message);
+    throw new ValidationError(err.message);
   }
 };
 
@@ -68,7 +68,7 @@ export const createProduct = async (data, userId) => {
  */
 export const updateProduct = async (id, data, userId) => {
   if (!data || Object.keys(data).length === 0) {
-    throw new ApiError(400, "No data provided for update");
+    throw new ValidationError("No data provided for update");
   }
 
   const updatedProduct = await Product.findOneAndUpdate(
@@ -86,7 +86,7 @@ export const updateProduct = async (id, data, userId) => {
   ).lean();
 
   if (!updatedProduct) {
-    throw new ApiError(404, "Product not found");
+    throw new NotFoundError("Product not found");
   }
 
   return updatedProduct;
@@ -108,7 +108,7 @@ export const deleteProduct = async (id, userId) => {
   ).lean();
 
   if (!deleted) {
-    throw new ApiError(404, "Product not found");
+    throw new NotFoundError("Product not found");
   }
 
   return { message: "Product deleted successfully" };
