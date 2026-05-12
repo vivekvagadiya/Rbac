@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { getOrderStatusSummary } from "../../../api/orders.api";
+import toast from "react-hot-toast";
 
 const statusColors = {
   pending: "#ed6c02", // warning
@@ -21,9 +22,17 @@ const statusColors = {
 const OrderStatusChart = () => {
   const [data, setData] = useState({});
 
+  const fetchData = async () => {
+    try {
+      const response = await getOrderStatusSummary();
+      setData(response?.data || {})
+    } catch (error) {
+      toast.error(error?.message || "failed")
+    }
+
+  }
   useEffect(() => {
-    // Handling potential undefined/null data
-    getOrderStatusSummary().then((res) => setData(res?.data || {}));
+    fetchData();
   }, []);
 
   const total = Object.values(data).reduce((a, b) => a + b, 0);
@@ -40,9 +49,9 @@ const OrderStatusChart = () => {
       }}
     >
       {/* Header Section */}
-      <Stack direction="row" sx={{justifyContent:"space-between",alignItems:'center'}} mb={3}>
+      <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: 'center' }} mb={3}>
         <Box>
-          <Typography variant="h6" sx={{fontWeight:800}}>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>
             Order Status
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -69,7 +78,7 @@ const OrderStatusChart = () => {
           return (
             <Box key={status} sx={{ group: "row" }}>
               <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }} mb={1}>
-                <Stack direction="row" spacing={2} sx={{alignItems:"center"}}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                   {/* Small Dot Indicator */}
                   <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: color }} />
                   <Typography

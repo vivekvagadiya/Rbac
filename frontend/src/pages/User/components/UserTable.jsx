@@ -49,18 +49,38 @@ const ActionButton = styled(IconButton)(({ theme, color }) => ({
 }));
 
 const StatusBadge = styled(Box, {
-    shouldForwardProp: (prop) => prop !== "isBlocked",
-})(({ theme, isBlocked }) => ({
-    display: "inline-flex",
-    padding: "4px 12px",
-    borderRadius: "8px",
-    fontSize: "0.75rem",
-    fontWeight: 700,
-    textTransform: "capitalize",
-    backgroundColor: alpha(isBlocked ? theme.palette.error.main : theme.palette.success.main, 0.1),
-    color: isBlocked ? theme.palette.error.dark : theme.palette.success.dark,
-    border: `1px solid ${alpha(isBlocked ? theme.palette.error.main : theme.palette.success.main, 0.2)}`,
-}));
+    shouldForwardProp: (prop) => prop !== "statusType",
+})(({ theme, statusType }) => {
+    const variants = {
+        active: {
+            bg: theme.palette.success.main,
+            color: theme.palette.success.dark,
+        },
+        blocked: {
+            bg: theme.palette.error.main,
+            color: theme.palette.error.dark,
+        },
+        deleted: {
+            bg: theme.palette.grey[500],
+            color: theme.palette.grey[800],
+        },
+    };
+
+    const selected = variants[statusType];
+
+    return {
+        display: "inline-flex",
+        alignItems: "center",
+        padding: "4px 12px",
+        borderRadius: "8px",
+        fontSize: "0.75rem",
+        fontWeight: 700,
+        textTransform: "capitalize",
+        backgroundColor: alpha(selected.bg, 0.1),
+        color: selected.color,
+        border: `1px solid ${alpha(selected.bg, 0.2)}`,
+    };
+});
 
 // --- Main Component ---
 
@@ -75,7 +95,7 @@ const UserTable = ({
     handleEdit,
     handleDelete,
 }) => {
-    const {hasPermission}=usePermission()
+    const { hasPermission } = usePermission()
     return (
         <Box sx={{ width: "100%" }}>
             <RootContainer elevation={0}>
@@ -107,10 +127,40 @@ const UserTable = ({
                                 </TableRow>
                             ) : (
                                 users.map((user) => (
-                                    <TableRow key={user._id} hover>
-                                        {/* User Info Column (Avatar + Name/Email) */}
+                                    <TableRow
+                                        key={user._id}
+                                        hover={!user.isDeleted}
+                                        sx={(theme) => ({
+                                            transition: "all 0.2s ease",
+
+                                            ...(user.isBlocked && {
+                                                backgroundColor: alpha(theme.palette.error.main, 0.04),
+
+                                                "&:hover": {
+                                                    backgroundColor: alpha(theme.palette.error.main, 0.08),
+                                                },
+
+                                                borderLeft: `4px solid ${theme.palette.error.main}`,
+                                            }),
+
+                                            ...(user.isDeleted && {
+                                                backgroundColor: theme.palette.grey[100],
+                                                opacity: 0.6,
+
+                                                "& td": {
+                                                    color: theme.palette.text.disabled,
+                                                },
+
+                                                "&:hover": {
+                                                    backgroundColor: theme.palette.grey[100],
+                                                },
+
+                                                borderLeft: `4px solid ${theme.palette.grey[500]}`,
+                                            }),
+                                        })}
+                                    >                                        {/* User Info Column (Avatar + Name/Email) */}
                                         <TableCell>
-                                            <Stack direction="row" spacing={2} sx={{alignItems:'center'}}>
+                                            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                                                 <Avatar
                                                     sx={{
                                                         width: 40,
@@ -124,10 +174,18 @@ const UserTable = ({
                                                     {user.name?.charAt(0).toUpperCase()}
                                                 </Avatar>
                                                 <Box>
-                                                    <Typography variant="body2" fontWeight={700}>
+                                                    <Typography
+                                                        variant="body2"
+                                                        fontWeight={700}
+                                                        sx={{
+                                                            textDecoration: user.isDeleted ? "line-through" : "none",
+                                                        }}
+                                                    >
                                                         {user.name}
                                                     </Typography>
-                                                    <Typography variant="caption" color="text.secondary">
+                                                    <Typography variant="caption" color="text.secondary" sx={{
+                                                            textDecoration: user.isDeleted ? "line-through" : "none",
+                                                        }}>
                                                         {user.email}
                                                     </Typography>
                                                 </Box>
@@ -143,22 +201,34 @@ const UserTable = ({
 
                                         {/* Status Column */}
                                         <TableCell>
-                                            <StatusBadge isBlocked={user.isBlocked}>
-                                                {user.isBlocked ? "Blocked" : "Active"}
+                                            <StatusBadge
+                                                statusType={
+                                                    user.isDeleted
+                                                        ? "deleted"
+                                                        : user.isBlocked
+                                                            ? "blocked"
+                                                            : "active"
+                                                }
+                                            >
+                                                {user.isDeleted
+                                                    ? "Deleted"
+                                                    : user.isBlocked
+                                                        ? "Blocked"
+                                                        : "Active"}
                                             </StatusBadge>
                                         </TableCell>
 
                                         {/* Actions Column */}
                                         <TableCell align="center">
-                                            <Stack direction="row" sx={{justifyContent:"center"}}>
+                                            <Stack direction="row" sx={{ justifyContent: "center" }}>
                                                 <Tooltip title="Edit User">
-                                                    <ActionButton size="small" onClick={() => handleEdit(user)} disabled={!hasPermission("user.update")}>
+                                                    <ActionButton size="small" onClick={() => handleEdit(user)} disabled={!hasPermission("user.update") || user.isDeleted}>
                                                         <EditDocumentIcon fontSize="inherit" />
                                                     </ActionButton>
                                                 </Tooltip>
 
                                                 <Tooltip title="Delete User">
-                                                    <ActionButton size="small" color="error" onClick={() => handleDelete(user)} disabled={!hasPermission("user.delete")}>
+                                                    <ActionButton size="small" color="error" onClick={() => handleDelete(user)} disabled={!hasPermission("user.delete") || user.isDeleted}>
                                                         <DeleteIcon fontSize="inherit" />
                                                     </ActionButton>
                                                 </Tooltip>

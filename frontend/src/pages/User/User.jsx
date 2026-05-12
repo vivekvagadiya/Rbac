@@ -89,7 +89,7 @@ const UserPage = () => {
             setUsers(res?.data || []);
             setTotal(res?.meta?.total || 0);
         } catch (err) {
-            toast.error("Failed to fetch users");
+            toast.error(err.message || "Failed to fetch users");
         } finally {
             setLoading(false);
         }
@@ -114,17 +114,17 @@ const UserPage = () => {
             setSubmitLoading(true);
 
             if (selectedUser) {
-                await updateUser(selectedUser._id, payload);
-                toast.success("User updated");
+                const response = await updateUser(selectedUser._id, payload);
+                toast.success(response?.message || "User updated");
             } else {
                 const response = await createUser(payload);
-                toast.success("User created");
+                toast.success(response?.message || "User created");
             }
 
             setOpenModal(false);
             fetchUsers();
         } catch (err) {
-            toast.error("Something went wrong");
+            toast.error(err.message || "Something went wrong");
         } finally {
             setSubmitLoading(false);
         }
@@ -147,13 +147,13 @@ const UserPage = () => {
         try {
             setDeleteLoading(true);
 
-            await deleteUserApi(deleteUser._id); // your API
+            const response = await deleteUserApi(deleteUser._id); // your API
 
-            toast.success("User deleted");
+            toast.success(response?.message || "User deleted");
             setDeleteUser(null);
             fetchUsers();
         } catch (err) {
-            toast.error("Failed to delete user");
+            toast.error(err?.message || "Failed to delete user");
         } finally {
             setDeleteLoading(false);
         }

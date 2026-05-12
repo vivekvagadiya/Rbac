@@ -77,6 +77,8 @@ const RecentOrders = () => {
       const response = await getOrders({ page: 1, limit: 10 });
       setOrders(response?.data || []);
     } catch (error) {
+      console.log('order error',error);
+      
       toast.error(error?.message || "Failed to fetch orders");
     }
   };

@@ -6,7 +6,9 @@ export const getOrders = async (params) => {
     const response = await api.get(endpoints.orders.getOrders, { params });
     return response?.data;
   } catch (error) {
-    return error?.message;
+    console.log(error);
+
+    throw error?.errors?.[0] || error;
   }
 };
 export const getOrderById = async (id) => {
@@ -16,7 +18,7 @@ export const getOrderById = async (id) => {
     );
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };
 
@@ -28,7 +30,7 @@ export const updateOrderStatus = async (id, status) => {
     );
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };
 export const refundOrder = async (id) => {
@@ -38,7 +40,7 @@ export const refundOrder = async (id) => {
     );
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };
 
@@ -47,6 +49,6 @@ export const getOrderStatusSummary = async () => {
     const response = await api.get(endpoints.orders.getStatusSummary);
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };

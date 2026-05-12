@@ -10,7 +10,7 @@ export const loginApi = async (data) => {
     }
     return response.data;
   } catch (error) {
-    throw error.response?.data || error.message || "";
+    throw error?.errors?.[0] || error;
   }
 };
 

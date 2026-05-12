@@ -3,7 +3,7 @@ import { endpoints } from "./endpoints";
 
 export const getDashboardStats = async () => {
   try {
-    const response = await api.get("/dashboard/stats");
+    const response = await api.get(endpoints.dashboard.stats);
     return response.data;
   } catch (error) {
     return error?.response;
