@@ -5,10 +5,13 @@ const { authenticate } = require("../middleware/auth.middleware");
 const { checkPermission } = require("../middleware/permission.middleware.js");
 const { validateObjectId } = require("../middleware/validateId.middleware.js");
 const { withActivityLog } = require("../utils/withActivityLog.js");
+const { validate } = require("../middleware/validation.middleware.js");
+const { getUsersSchema, getUserByIdSchema, updateUserSchema, createUserSchema, deleteUserSchema, assignRoleSchema, toggleBlockSchema } = require("../validators/user.validation.js");
 
 router.get(
   "/",
   authenticate,
+  validate(getUsersSchema),
   checkPermission("user.read"),
   userController.getUsers,
 );
@@ -16,15 +19,15 @@ router.get(
 router.get(
   "/:id",
   authenticate,
-  validateObjectId,
+  validate(getUserByIdSchema),
   checkPermission("user.read"),
   userController.getUserById,
 );
 router.put(
   "/:id",
   authenticate,
+  validate(updateUserSchema),
   checkPermission("user.update"),
-  validateObjectId,
   withActivityLog(userController.updateUser, (req, result, err) => ({
     action: "UPDATE_USER",
     resource: "USER",
@@ -41,6 +44,7 @@ router.put(
 router.post(
   "/",
   authenticate,
+  validate(createUserSchema),
   checkPermission("user.create"),
   withActivityLog(userController.createUser, (req, result, err) => ({
     action: "CREATE_USER",
@@ -59,7 +63,7 @@ router.delete(
   "/:id",
   authenticate,
   checkPermission("user.delete"),
-  validateObjectId,
+  validate(deleteUserSchema),
   withActivityLog(userController.deleteUser, (req, result, err) => ({
     action: "DELETE_USER",
     resource: "USER",
@@ -74,7 +78,7 @@ router.patch(
   "/:id/role",
   authenticate,
   checkPermission("user.update"),
-  validateObjectId,
+  validate(assignRoleSchema),
   withActivityLog(userController.assignRoleToUser, (req, result, err) => ({
     action: "ASSIGN_ROLE_TO_USER",
     resource: "USER",
@@ -92,7 +96,7 @@ router.patch(
   "/:id/block",
   authenticate,
   checkPermission("user.update"),
-  validateObjectId,
+  validate(toggleBlockSchema),
   withActivityLog(userController.toggleBlockUser, (req, result, err) => ({
     action: "TOGGLE_BLOCK_USER",
     resource: "USER",

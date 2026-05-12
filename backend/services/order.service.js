@@ -1,20 +1,20 @@
 import mongoose from "mongoose";
 import Product from "../models/product.model.js";
 import Order from "../models/order.model.js";
-import ApiError from "../utils/ApiError.js";
+import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
 
 export const createOrder = async (data, userId) => {
   const { products } = data;
 
   if (!products || !Array.isArray(products) || products.length === 0) {
-    throw new ApiError(400, "Products are required");
+    throw new ValidationError("Products are required");
   }
   for (const item of products) {
     if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
-      throw new ApiError(400, "Invalid product ID");
+      throw new ValidationError("Invalid product ID");
     }
     if (!item.quantity || item.quantity <= 0) {
-      throw new ApiError(400, "Invalid Quantity");
+      throw new ValidationError("Invalid Quantity");
     }
   }
 
@@ -25,7 +25,7 @@ export const createOrder = async (data, userId) => {
   }).lean();
 
   if (dbProducts.length !== products.length) {
-    throw new ApiError(400, "Some products are not found");
+    throw new ValidationError("Some products are not found");
   }
 
   const productMap = new Map();
@@ -36,7 +36,7 @@ export const createOrder = async (data, userId) => {
     const prod = productMap.get(item.product.toString());
 
     if (item.quantity > prod.stock) {
-      throw new ApiError(400, `Insufficient stock for product ${prod.name}`);
+      throw new ValidationError(`Insufficient stock for product ${prod.name}`);
     }
     totalAmount += prod.price * item.quantity;
 
@@ -157,10 +157,10 @@ export const getOrders = async (query) => {
 
 export const updateOrderStatus = async (id, newStatus, userId) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new ApiError(400, "Invalid order ID");
+    throw new ValidationError("Invalid order ID");
   }
   if (!newStatus) {
-    throw new ApiError(400, "Status is required");
+    throw new ValidationError("Status is required");
   }
 
   const allowedTransitions = {
@@ -174,18 +174,17 @@ export const updateOrderStatus = async (id, newStatus, userId) => {
   const order = await Order.findById(id);
 
   if (!order) {
-    throw new ApiError(404, "Order not found");
+    throw new NotFoundError("Order not found");
   }
   const allowed = allowedTransitions[order.status] || [];
 
   if (!allowed.includes(newStatus)) {
-    throw new ApiError(
-      400,
+    throw new ValidationError(
       `Cannot change status from ${order.status} to ${newStatus}`,
     );
   }
   if (order.isRefunded) {
-    throw new ApiError(400, "Cannot update refunded order");
+    throw new ValidationError("Cannot update refunded order");
   }
 
   order.status = newStatus;
@@ -196,21 +195,21 @@ export const updateOrderStatus = async (id, newStatus, userId) => {
 
 export const refundOrder = async (id, userId) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new ApiError(400, "Invalid order ID");
+    throw new ValidationError("Invalid order ID");
   }
 
   const order = await Order.findById(id);
 
   if (!order) {
-    throw new ApiError(404, "Order not found");
+    throw new NotFoundError("Order not found");
   }
 
   if (order.status !== "delivered") {
-    throw new ApiError(400, "Only delivered orders can be refunded");
+    throw new ValidationError("Only delivered orders can be refunded");
   }
 
   if (order.isRefunded) {
-    throw new ApiError(400, "Order is already refunded");
+    throw new ValidationError("Order is already refunded");
   }
 
   order.isRefunded = true;
@@ -221,7 +220,7 @@ export const refundOrder = async (id, userId) => {
 
 export const getOrderById = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new ApiError(400, "Invalid order ID");
+    throw new ValidationError("Invalid order ID");
   }
 
   const order = await Order.findById(id)
@@ -230,7 +229,7 @@ export const getOrderById = async (id) => {
     .lean();
 
   if (!order) {
-    throw new ApiError(404, "Order not found");
+    throw new NotFoundError("Order not found");
   }
 
   return order;

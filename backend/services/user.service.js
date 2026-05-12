@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
-import ApiError from "../utils/ApiError.js";
+import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
 import bcrypt from "bcryptjs";
 
 //  Create User (Admin side)
@@ -27,7 +27,7 @@ export const createUser = async (data) => {
   // =========================
   const role = await Role.findById(roleId);
   if (!role) {
-    throw new ApiError(400, "Invalid role selected");
+    throw new ValidationError("Invalid role selected");
   }
 
   // =========================
@@ -56,7 +56,7 @@ export const createUser = async (data) => {
 };
 
 //  Get All Users (with pagination + filtering)
-export const getUsers = async (query) => {
+export const getUsers = async (query, id) => {
   let { page = 1, limit = 10, search, role, status } = query;
 
   // ✅ sanitize inputs
@@ -70,6 +70,7 @@ export const getUsers = async (query) => {
   // =====================
   const filter = {
     // isDeleted: false,
+    _id: { $ne: id },
   };
 
   // 🔍 Search (name + email)
@@ -138,7 +139,7 @@ export const getUserById = async (userId) => {
   });
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new NotFoundError("User not found");
   }
 
   return user;
@@ -183,7 +184,7 @@ export const updateUser = async (userId, data) => {
   if (data.roleId) {
     const role = await Role.findById(data.roleId);
     if (!role) {
-      throw new ApiError(400, "Invalid role selected");
+      throw new ValidationError("Invalid role selected");
     }
 
     updateData.role = data.roleId; // 🔥 map roleId → role
@@ -207,7 +208,7 @@ export const updateUser = async (userId, data) => {
   );
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new NotFoundError("User not found");
   }
 
   // =========================
@@ -227,7 +228,7 @@ export const deleteUser = async (userId) => {
   });
 
   if (!user) {
-    throw new ApiError(404, "User not found or already deleted");
+    throw new NotFoundError("User not found or already deleted");
   }
 
   user.isDeleted = true;
@@ -243,7 +244,7 @@ export const deleteUser = async (userId) => {
 export const assignRoleToUser = async (userId, roleId) => {
   const role = await Role.findById(roleId);
   if (!role) {
-    throw new ApiError(404, "Role not found");
+    throw new NotFoundError("Role not found");
   }
 
   const user = await User.findOneAndUpdate(
@@ -253,7 +254,7 @@ export const assignRoleToUser = async (userId, roleId) => {
   ).populate("role");
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new NotFoundError("User not found");
   }
 
   return user;
@@ -268,7 +269,7 @@ export const toggleBlockUser = async (userId, isBlocked) => {
   );
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new NotFoundError("User not found");
   }
 
   return user;

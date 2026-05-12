@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-import ApiError from "../utils/ApiError.js";
+import ApiError, { ValidationError } from "../utils/ApiError.js";
 import { generateTokens } from "../utils/generateTokens.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -7,7 +7,7 @@ export const registerUser = async (data) => {
   const { email, password } = data;
 
   if (!email || !password) {
-    throw new ApiError(400, "Email and password are required");
+    throw new ValidationError( "Email and password are required");
   }
 
   const userExist = await User.findOne({ email });
@@ -34,7 +34,7 @@ export const registerUser = async (data) => {
 
 export const loginUser = async (email, password) => {
   if (!email || !password) {
-    throw new ApiError(400, "Email and password are required");
+    throw new ValidationError( "Email and password are required");
   }
 
   const user = await User.findOne({ email }).populate("role");
@@ -119,7 +119,7 @@ export const getUserData = async (userId) => {
   });
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new NotFoundError("User not found");
   }
 
   return user;

@@ -1,115 +1,134 @@
-import Product from "../models/product.model.js";
-import ApiError from "../utils/ApiError.js";
+import { z } from "zod";
+import mongoose from "mongoose";
 
 /**
- * GET PRODUCTS (Pagination)
+ * OBJECT ID VALIDATION
  */
-
-export const getProducts = async (query) => {
-  let { page = 1, limit = 10, search, isActive, category } = query;
-
-  page = Math.max(1, parseInt(page) || 1);
-  limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
-
-  const skip = (page - 1) * limit;
-
-  const filter = {};
-
-  //  Search
-  if (search?.trim()) {
-    const regex = new RegExp(search.trim(), "i");
-    filter.$or = [{ name: regex }, { description: regex }];
-  }
-
-  //  Category
-  if (category) {
-    filter.category = category;
-  }
-
-  //  Status (BOOLEAN ONLY)
-  if (isActive) {
-    filter.isActive = isActive;
-  }
-
-  const [products, total] = await Promise.all([
-    Product.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
-
-    Product.countDocuments(filter),
-  ]);
-
-  return {
-    products,
-    total,
-    page,
-    limit,
-  };
-};
+const objectIdSchema = z.string().refine(
+  (id) => mongoose.Types.ObjectId.isValid(id),
+  {
+    message: "Invalid product id",
+  },
+);
 
 /**
- * CREATE PRODUCT
+ * CREATE PRODUCT SCHEMA
  */
-export const createProduct = async (data, userId) => {
-  try {
-    return await Product.create({
-      ...data,
-      name: data.name.trim(),
-      stock: data.stock ?? 0,
-      isActive: data.isActive ?? true,
-      createdBy: userId,
-      updatedBy: userId,
-    });
-  } catch (err) {
-    throw new ApiError(400, err.message);
-  }
-};
+export const createProductSchema = z.object({
+  body: z.object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Product name must be at least 2 characters")
+      .max(100, "Product name too long"),
+
+    description: z
+      .string()
+      .max(500, "Description too long")
+      .optional(),
+
+    price: z
+      .number({
+        required_error: "Price is required",
+        invalid_type_error: "Price must be a number",
+      })
+      .min(0, "Price cannot be negative"),
+
+    category: z
+      .string()
+      .trim()
+      .min(1, "Category is required"),
+
+    stock: z
+      .number({
+        invalid_type_error: "Stock must be a number",
+      })
+      .min(0, "Stock cannot be negative")
+      .optional(),
+
+    isActive: z.boolean().optional(),
+  }),
+});
 
 /**
- * UPDATE PRODUCT
+ * UPDATE PRODUCT SCHEMA
  */
-export const updateProduct = async (id, data, userId) => {
-  if (!data || Object.keys(data).length === 0) {
-    throw new ApiError(400, "No data provided for update");
-  }
+export const updateProductSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
 
-  const updatedProduct = await Product.findOneAndUpdate(
-    { _id: id},
-    {
-      $set: {
-        ...data,
-        updatedBy: userId,
-      },
-    },
-    {
-      new: true,
-      runValidators: true,
-    },
-  ).lean();
+  body: z
+    .object({
+      name: z
+        .string()
+        .trim()
+        .min(2, "Product name must be at least 2 characters")
+        .max(100, "Product name too long")
+        .optional(),
 
-  if (!updatedProduct) {
-    throw new ApiError(404, "Product not found");
-  }
+      description: z
+        .string()
+        .max(1000, "Description too long")
+        .optional(),
 
-  return updatedProduct;
-};
+      price: z
+        .number({
+          invalid_type_error: "Price must be a number",
+        })
+        .min(0, "Price cannot be negative")
+        .optional(),
+
+      category: z
+        .string()
+        .trim()
+        .min(1, "Category cannot be empty")
+        .optional(),
+
+      stock: z
+        .number({
+          invalid_type_error: "Stock must be a number",
+        })
+        .min(0, "Stock cannot be negative")
+        .optional(),
+
+      isActive: z.boolean().optional(),
+    })
+    .refine((data) => Object.keys(data).length > 0, {
+      message: "No valid fields to update",
+    }),
+});
 
 /**
- * DELETE PRODUCT (Soft Delete)
+ * DELETE PRODUCT SCHEMA
  */
-export const deleteProduct = async (id, userId) => {
-  const deleted = await Product.findOneAndUpdate(
-    { _id: id, isActive: true },
-    {
-      $set: {
-        isActive: false,
-        updatedBy: userId,
-      },
-    },
-    { new: true },
-  ).lean();
+export const deleteProductSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
+});
 
-  if (!deleted) {
-    throw new ApiError(404, "Product not found");
-  }
+/**
+ * GET PRODUCTS SCHEMA
+ */
+export const getProductsSchema = z.object({
+  query: z.object({
+    page: z
+      .string()
+      .regex(/^\d+$/, "Page must be a number")
+      .optional(),
 
-  return { message: "Product deleted successfully" };
-};
+    limit: z
+      .string()
+      .regex(/^\d+$/, "Limit must be a number")
+      .optional(),
+
+    search: z.string().optional(),
+
+    category: z.string().optional(),
+
+    isActive: z
+      .enum(["true", "false"])
+      .optional(),
+  }),
+});

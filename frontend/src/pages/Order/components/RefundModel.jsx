@@ -43,7 +43,7 @@ const RefundModal = ({ open, onClose, order, onSuccess }) => {
       onSuccess?.();
       onClose();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Refund failed");
+      toast.error(error?.message || "Refund failed");
     } finally {
       setLoading(false);
     }

@@ -75,7 +75,7 @@ const UpdateStatusModal = ({ open, onClose, order, onSuccess }) => {
       onSuccess?.();
       onClose();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to update status");
+      toast.error(err?.message || "Failed to update status");
     } finally {
       setLoading(false);
     }

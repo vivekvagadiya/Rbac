@@ -5,21 +5,8 @@ export const createUser = async (req, res, next) => {
   try {
     const { name, email, password, roleId ,isBlocked} = req.body;
 
-    // =========================
-    // 1. Basic Validation (fallback)
-    // =========================
-    if (!name || !email || !password || !roleId ||typeof isBlocked!=='boolean') {
-      return next(new ApiError(400, "All fields are required"));
-    }
-
-    // =========================
-    // 2. Call Service
-    // =========================
     const user = await userService.createUser(req.body);
 
-    // =========================
-    // 3. Send Response
-    // =========================
     res.status(201).json({
       success: true,
       message: "User created successfully",
@@ -30,12 +17,12 @@ export const createUser = async (req, res, next) => {
     next(error);
   }
 };
-// ✅ Get All Users (with pagination)
+//  Get All Users (with pagination)
 export const getUsers = async (req, res, next) => {
   try {
     const { page, limit } = req.query;
 
-    const result = await userService.getUsers(req.query);
+    const result = await userService.getUsers(req.query,req.user._id);
 
     res.status(200).json({
       success: true,
@@ -70,17 +57,7 @@ export const getUserById = async (req, res, next) => {
 // ✅ Update User
 export const updateUser = async (req, res, next) => {
   try {
-    const allowedFields = ["name", "email", "roleId", "password",'isBlocked'];
-
-    const filteredData = {};
-
-    for (let key of allowedFields) {
-      if (req.body[key] !== undefined) {
-        filteredData[key] = req.body[key];
-      }
-    }
-
-    const user = await userService.updateUser(req.params.id, filteredData);
+    const user = await userService.updateUser(req.params.id, req.body);
 
     res.status(200).json({
       success: true,

@@ -49,8 +49,8 @@ const RolePage = () => {
             const grouped = groupPermissions(permissionData);
             setGroupedPermissions(grouped);
 
-        } catch {
-            toast.error("failed to fetch roles");
+        } catch(err) {
+            toast.error(err.message||"failed to fetch roles");
         } finally {
             setLoading(false)
         }

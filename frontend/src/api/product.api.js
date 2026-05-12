@@ -6,7 +6,7 @@ export const getProducts = async (params) => {
     const response = await api.get(endpoints.product.getProduct, { params });
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };
 export const createProduct = async (data) => {
@@ -14,7 +14,7 @@ export const createProduct = async (data) => {
     const response = await api.post(endpoints.product.createProduct, data);
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };
 export const updateProduct = async (id, data) => {
@@ -25,7 +25,7 @@ export const updateProduct = async (id, data) => {
     );
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };
 export const deleteProduct = async (id) => {
@@ -35,6 +35,6 @@ export const deleteProduct = async (id) => {
     );
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };

@@ -6,7 +6,7 @@ export const getUserProfile = async () => {
     const response = await api.get(endpoints.user.profile);
     return response.data.data;
   } catch (error) {
-    throw new Error(error?.response?.data || "failed");
+    throw error?.errors?.[0] || error;
   }
 };
 
@@ -15,7 +15,7 @@ export const getAllUsers = async (params) => {
     const response = await api.get(endpoints.user.users, { params });
     return response.data;
   } catch (error) {
-    throw new Error(error?.response?.data || "failed");
+    throw error?.errors?.[0] || error;
   }
 };
 
@@ -24,7 +24,7 @@ export const createUser = async (payload) => {
     const response = await api.post(endpoints.user.createUser, payload);
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };
 
@@ -36,7 +36,7 @@ export const updateUser = async (id, payload) => {
     );
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };
 export const deleteUserApi = async (id) => {
@@ -46,6 +46,6 @@ export const deleteUserApi = async (id) => {
     );
     return response?.data;
   } catch (error) {
-    return error?.message;
+    throw error?.errors?.[0] || error;
   }
 };

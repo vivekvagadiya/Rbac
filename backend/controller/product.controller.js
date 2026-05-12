@@ -29,21 +29,6 @@ export const createProduct = async (req, res, next) => {
   try {
     let { name, description, price, category, stock, isActive } = req.body;
 
-    // Validation
-    if (!name || !name.trim() || price == null || !category) {
-      return res.status(400).json({
-        success: false,
-        message: "Name, price and category are required",
-      });
-    }
-
-    if (price < 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Price cannot be negative",
-      });
-    }
-
     const product = await productService.createProduct(
       {
         name: name.trim(),
@@ -73,60 +58,16 @@ export const createProduct = async (req, res, next) => {
 export const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid product id",
-      });
-    }
-
-    const allowedFields = [
-      "name",
-      "description",
-      "price",
-      "category",
-      "stock",
-      "isActive",
-    ];
-
-    const updateData = {};
-
-    for (let key of allowedFields) {
-      if (req.body[key] !== undefined) {
-        updateData[key] = req.body[key];
-      }
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No valid fields to update",
-      });
-    }
-
-    // Extra validation
-    if (updateData.name !== undefined && !updateData.name.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Name cannot be empty",
-      });
-    }
-
-    if (updateData.price !== undefined && updateData.price < 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Price cannot be negative",
-      });
-    }
-
-    if (updateData.name) {
-      updateData.name = updateData.name.trim();
-    }
+    const { name, description, price, category, stock, isActive } = req.body;
 
     const updatedProduct = await productService.updateProduct(
       id,
-      updateData,
+      name,
+      description,
+      price,
+      category,
+      stock,
+      isActive,
       req.user._id,
     );
 
@@ -146,13 +87,6 @@ export const updateProduct = async (req, res, next) => {
 export const deleteProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid product id",
-      });
-    }
 
     const result = await productService.deleteProduct(id, req.user._id);
 

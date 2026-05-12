@@ -6,6 +6,6 @@ export const getPermissions = async () => {
     const response = await api.get(endpoints.permissions.getPermissions);
     return response?.data;
   } catch (error) {
-    return error?.response?.data;
+    throw error?.errors?.[0] || error;
   }
 };

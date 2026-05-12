@@ -113,7 +113,7 @@ const ProductFormModal = ({ open, onClose, editData, onSuccess }) => {
       onSuccess?.();
       handleClose();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Something went wrong");
+      toast.error(err?.message || "Something went wrong");
     }
   };
 

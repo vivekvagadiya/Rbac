@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   Drawer,
   List,
@@ -55,7 +56,8 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
 
   const drawerContent = (
     <Box sx={{ height: "100%", bgcolor: "#0f172a", color: "#fff" }}>
-      <Box sx={{ p: 2.5, borderBottom: "1px solid #1e293b" }}>
+      <Box sx={{ p: 2.5, borderBottom: "1px solid #1e293b", display: "flex", alignItems: 'center', gap: 2 }}>
+        <Avatar src="/rbac-logo.png" sx={{ width: 40, height: 40, borderRadius: "50%",cursor:"pointer" }} onClick={()=>navigate("/")}/>
         <Typography variant="h6" fontWeight="bold" color="#38bdf8">
           Admin Panel
         </Typography>

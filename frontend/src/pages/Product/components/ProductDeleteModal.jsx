@@ -38,8 +38,7 @@ const ProductDeleteModal = ({ open, onClose, product, onSuccess }) => {
       onClose();
       onSuccess?.();
     } catch (err) {
-      const message = err?.response?.data?.message || err?.message || "Failed to delete product";
-      toast.error(message);
+      toast.error(err?.message);
     } finally {
       setLoading(false);
     }
