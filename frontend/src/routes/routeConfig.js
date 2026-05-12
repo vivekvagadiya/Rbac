@@ -20,7 +20,6 @@ export const routes = [
   {
     path: "/unauthorized",
     element: UnAuthorized,
-    public: true, // ✅ fix
   },
   {
     path: "/",

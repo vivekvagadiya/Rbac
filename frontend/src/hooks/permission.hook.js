@@ -1,20 +1,41 @@
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useCallback } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 const usePermission = () => {
   const { user } = useContext(AuthContext);
 
+  // Create clean permission list
   const permissionList = useMemo(() => {
-    return user?.role?.permissions?.map((p) => p.name) || [];
+    if (!Array.isArray(user?.role?.permissions)) {
+      return [];
+    }
+
+    return user.role.permissions
+      .map((p) => p?.name)
+      .filter(Boolean);
   }, [user]);
 
-  const hasPermission = (perm) => {
-    return permissionList.includes(perm);
-  };
+  // Check exact permission
+  const hasPermission = useCallback(
+    (perm) => {
+      if (!perm) return false;
 
-  const hasModuleAccess = (module) => {
-    return permissionList.some((p) => p.startsWith(module + ".read"));
-  };
+      return permissionList.includes(perm);
+    },
+    [permissionList]
+  );
+
+  // Module-level access
+  const hasModuleAccess = useCallback(
+    (module) => {
+      if (!module) return false;
+
+      return permissionList.some((p) =>
+        p.startsWith(`${module}.`)
+      );
+    },
+    [permissionList]
+  );
 
   return {
     hasPermission,

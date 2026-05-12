@@ -7,7 +7,7 @@ const renderRoutes = (routes) => {
   return routes.map((route, index) => {
     const Element = route.element;
 
-    const element = route.protected ? (
+    const wrappedElement = route.protected ? (
       <ProtectedRoute permission={route.permission}>
         <Element />
       </ProtectedRoute>
@@ -15,21 +15,15 @@ const renderRoutes = (routes) => {
       <Element />
     );
 
-    if (route.children) {
-      return (
-        <Route key={index} path={route.path} element={element}>
-          {renderRoutes(route.children)}
-        </Route>
-      );
-    }
-
     return (
       <Route
         key={index}
         path={route.path}
         index={route.index}
-        element={element} // ✅ FIX: apply protection here too
-      />
+        element={wrappedElement}
+      >
+        {route.children && renderRoutes(route.children)}
+      </Route>
     );
   });
 };
