@@ -22,7 +22,7 @@ export const getUsers = async (req, res, next) => {
   try {
     const { page, limit } = req.query;
 
-    const result = await userService.getUsers(req.query);
+    const result = await userService.getUsers(req.query,req.user._id);
 
     res.status(200).json({
       success: true,
@@ -57,7 +57,7 @@ export const getUserById = async (req, res, next) => {
 // ✅ Update User
 export const updateUser = async (req, res, next) => {
   try {
-    const user = await userService.updateUser(req.params.id, filteredData);
+    const user = await userService.updateUser(req.params.id, req.body);
 
     res.status(200).json({
       success: true,

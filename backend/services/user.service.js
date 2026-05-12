@@ -56,7 +56,7 @@ export const createUser = async (data) => {
 };
 
 //  Get All Users (with pagination + filtering)
-export const getUsers = async (query) => {
+export const getUsers = async (query, id) => {
   let { page = 1, limit = 10, search, role, status } = query;
 
   // ✅ sanitize inputs
@@ -70,6 +70,7 @@ export const getUsers = async (query) => {
   // =====================
   const filter = {
     // isDeleted: false,
+    _id: { $ne: id },
   };
 
   // 🔍 Search (name + email)
