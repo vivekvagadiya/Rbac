@@ -44,4 +44,4 @@ const usePermission = () => {
   };
 };
 
-export default usePermission;
+export default usePermission; 
