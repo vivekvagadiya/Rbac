@@ -58,8 +58,14 @@ jobs:
           cd backend
           npm install
 
-      # Backend Run/Test
-      - name: Run Backend
+      # Backend Test
+      - name: Test Backend
         run: |
           cd backend
-          npm start
+          npm test
+      
+      # Deploy Backend to Render (or similar)
+      - name: Deploy Backend
+        run: |
+          echo "Backend tests passed - ready for deployment"
+          # Add deployment steps here (Render, Railway, etc.)
