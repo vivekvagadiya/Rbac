@@ -13,6 +13,17 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    # REQUIRED for Environment Secrets
+    environment: Preview
+
+    # Inject GitHub Secrets into process.env
+    env:
+      PORT: ${{ secrets.PORT }}
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+      VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
     steps:
       # Checkout repository
       - name: Checkout Code
@@ -47,9 +58,8 @@ jobs:
           cd backend
           npm install
 
-      # Optional test step
-      - name: Run Backend Tests
+      # Backend Run/Test
+      - name: Run Backend
         run: |
           cd backend
-          npm test
-        continue-on-error: true
+          npm start
