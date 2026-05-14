@@ -6,7 +6,6 @@ const connectDB = require("./config/db");
 const errorHandler = require("./middleware/error.middleware").default;
 
 const app = express();
-connectDB();
 app.use(
   cors({
     origin: [
