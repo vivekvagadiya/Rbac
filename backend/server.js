@@ -1,5 +1,5 @@
 require("dotenv").config();
-
+require('./cron/logger.cron')
 const app = require("./app");
 const connectDB = require("./config/db");
 

@@ -4,6 +4,7 @@ export const generateTokens = (user) => {
   const payload = {
     id: user._id,
     role: user.role._id, // ✅ important for RBAC optimization later
+    version: user.tokenVersion,
   };
 
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {

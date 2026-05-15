@@ -111,6 +111,7 @@ export const getUsers = async (query, id) => {
   // 📦 Fetch Data
   // =====================
   const users = await User.find(filter)
+  .select("-password -refreshToken -tokenVersion")
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: -1 }) // latest first

@@ -1,134 +1,115 @@
-import { z } from "zod";
-import mongoose from "mongoose";
+import Product from "../models/product.model.js";
+import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
 
 /**
- * OBJECT ID VALIDATION
+ * GET PRODUCTS (Pagination)
  */
-const objectIdSchema = z.string().refine(
-  (id) => mongoose.Types.ObjectId.isValid(id),
-  {
-    message: "Invalid product id",
-  },
-);
+
+export const getProducts = async (query) => {
+  let { page = 1, limit = 10, search, isActive, category } = query;
+
+  page = Math.max(1, parseInt(page) || 1);
+  limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
+
+  const skip = (page - 1) * limit;
+
+  const filter = {};
+
+  //  Search
+  if (search?.trim()) {
+    const regex = new RegExp(search.trim(), "i");
+    filter.$or = [{ name: regex }, { description: regex }];
+  }
+
+  //  Category
+  if (category) {
+    filter.category = category;
+  }
+
+  //  Status (BOOLEAN ONLY)
+  if (isActive) {
+    filter.isActive = isActive;
+  }
+
+  const [products, total] = await Promise.all([
+    Product.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
+
+    Product.countDocuments(filter),
+  ]);
+
+  return {
+    products,
+    total,
+    page,
+    limit,
+  };
+};
 
 /**
- * CREATE PRODUCT SCHEMA
+ * CREATE PRODUCT
  */
-export const createProductSchema = z.object({
-  body: z.object({
-    name: z
-      .string()
-      .trim()
-      .min(2, "Product name must be at least 2 characters")
-      .max(100, "Product name too long"),
-
-    description: z
-      .string()
-      .max(500, "Description too long")
-      .optional(),
-
-    price: z
-      .number({
-        required_error: "Price is required",
-        invalid_type_error: "Price must be a number",
-      })
-      .min(0, "Price cannot be negative"),
-
-    category: z
-      .string()
-      .trim()
-      .min(1, "Category is required"),
-
-    stock: z
-      .number({
-        invalid_type_error: "Stock must be a number",
-      })
-      .min(0, "Stock cannot be negative")
-      .optional(),
-
-    isActive: z.boolean().optional(),
-  }),
-});
+export const createProduct = async (data, userId) => {
+  try {
+    return await Product.create({
+      ...data,
+      name: data.name.trim(),
+      stock: data.stock ?? 0,
+      isActive: data.isActive ?? true,
+      createdBy: userId,
+      updatedBy: userId,
+    });
+  } catch (err) {
+    throw new ValidationError(err.message);
+  }
+};
 
 /**
- * UPDATE PRODUCT SCHEMA
+ * UPDATE PRODUCT
  */
-export const updateProductSchema = z.object({
-  params: z.object({
-    id: objectIdSchema,
-  }),
+export const updateProduct = async (id, data, userId) => {
+  if (!data || Object.keys(data).length === 0) {
+    throw new ValidationError("No data provided for update");
+  }
 
-  body: z
-    .object({
-      name: z
-        .string()
-        .trim()
-        .min(2, "Product name must be at least 2 characters")
-        .max(100, "Product name too long")
-        .optional(),
+  const updatedProduct = await Product.findOneAndUpdate(
+    { _id: id},
+    {
+      $set: {
+        ...data,
+        updatedBy: userId,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    },
+  ).lean();
 
-      description: z
-        .string()
-        .max(1000, "Description too long")
-        .optional(),
+  if (!updatedProduct) {
+    throw new NotFoundError("Product not found");
+  }
 
-      price: z
-        .number({
-          invalid_type_error: "Price must be a number",
-        })
-        .min(0, "Price cannot be negative")
-        .optional(),
-
-      category: z
-        .string()
-        .trim()
-        .min(1, "Category cannot be empty")
-        .optional(),
-
-      stock: z
-        .number({
-          invalid_type_error: "Stock must be a number",
-        })
-        .min(0, "Stock cannot be negative")
-        .optional(),
-
-      isActive: z.boolean().optional(),
-    })
-    .refine((data) => Object.keys(data).length > 0, {
-      message: "No valid fields to update",
-    }),
-});
+  return updatedProduct;
+};
 
 /**
- * DELETE PRODUCT SCHEMA
+ * DELETE PRODUCT (Soft Delete)
  */
-export const deleteProductSchema = z.object({
-  params: z.object({
-    id: objectIdSchema,
-  }),
-});
+export const deleteProduct = async (id, userId) => {
+  const deleted = await Product.findOneAndUpdate(
+    { _id: id, isActive: true },
+    {
+      $set: {
+        isActive: false,
+        updatedBy: userId,
+      },
+    },
+    { new: true },
+  ).lean();
 
-/**
- * GET PRODUCTS SCHEMA
- */
-export const getProductsSchema = z.object({
-  query: z.object({
-    page: z
-      .string()
-      .regex(/^\d+$/, "Page must be a number")
-      .optional(),
+  if (!deleted) {
+    throw new NotFoundError("Product not found");
+  }
 
-    limit: z
-      .string()
-      .regex(/^\d+$/, "Limit must be a number")
-      .optional(),
-
-    search: z.string().optional(),
-
-    category: z.string().optional(),
-
-    isActive: z
-      .enum(["true", "false"])
-      .optional(),
-  }),
-});
+  return { message: "Product deleted successfully" };
+};
