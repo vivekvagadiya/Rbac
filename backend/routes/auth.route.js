@@ -11,6 +11,7 @@ router.post(
     action: "REGISTER_USER",
     resource: "AUTH",
     resourceId: result?._id || null,
+    userId: result?._id || null,
     description: err
       ? `Failed to register: ${err.message}`
       : `User registered`,
@@ -26,7 +27,8 @@ router.post(
   withActivityLog(authController.login, (req, result, err) => ({
     action: "LOGIN",
     resource: "AUTH",
-    resourceId: result?.user?._id || null,
+    resourceId: result?._id || null,
+    userId: result?._id || null,
     description: err
       ? `Failed login attempt`
       : `User logged in`,

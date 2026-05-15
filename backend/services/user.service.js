@@ -31,17 +31,12 @@ export const createUser = async (data) => {
   }
 
   // =========================
-  // 4. Hash Password
-  // =========================
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // =========================
-  // 5. Create User
+  // 4. Create User
   // =========================
   const user = await User.create({
     name,
     email,
-    password: hashedPassword,
+    password,                 // ✅ Let Mongoose pre-save hook hash it
     role: roleId,
     isBlocked: isBlocked,
   });
