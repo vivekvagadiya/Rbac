@@ -24,7 +24,6 @@ const Login = () => {
   });
 
   const [btnLoading, setBtnLoading] = useState(false);
-  const [error, setError] = useState("");
 
   // ✅ Redirect AFTER auth state updates
   useEffect(() => {
@@ -35,7 +34,6 @@ const Login = () => {
 
   const handleSubmit = async () => {
   setBtnLoading(true);
-  setError("");
 
   try {
     const user = await login(form);
@@ -44,7 +42,7 @@ const Login = () => {
       navigate(from, { replace: true });
     }
   } catch (err) {
-    setError(err?.message || "Login failed");
+    // Error is already displayed via toast in AuthContext
   } finally {
     setBtnLoading(false);
   }
@@ -89,12 +87,6 @@ const Login = () => {
             setForm({ ...form, password: e.target.value })
           }
         />
-
-        {error && (
-          <Typography color="error" mt={1}>
-            {error}
-          </Typography>
-        )}
 
         <Button
           fullWidth
