@@ -25,14 +25,15 @@ const seedUsers = async () => {
     }
 
     const password = await bcrypt.hash("123456", 10);
+    const AdminPassword = await bcrypt.hash("vivek@123", 10);
 
     const users = [];
 
     // 1 Admin
     users.push({
       name: "Admin User",
-      email: "admin@example.com",
-      password,
+      email: "vivek47@yopmail.com",
+      password:AdminPassword,
       role: adminRole._id,
     });
 
@@ -40,7 +41,7 @@ const seedUsers = async () => {
     for (let i = 1; i <= 5; i++) {
       users.push({
         name: `Manager ${i}`,
-        email: `manager${i}@example.com`,
+        email: `manager${i}@yopmail.com`,
         password,
         role: managerRole._id,
       });
@@ -50,7 +51,7 @@ const seedUsers = async () => {
     for (let i = 1; i <= 20; i++) {
       users.push({
         name: `User ${i}`,
-        email: `user${i}@example.com`,
+        email: `user${i}@yopmail.com`,
         password,
         role: userRole._id,
       });

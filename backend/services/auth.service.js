@@ -7,7 +7,7 @@ export const registerUser = async (data) => {
   const { email, password } = data;
 
   if (!email || !password) {
-    throw new ValidationError( "Email and password are required");
+    throw new ValidationError("Email and password are required");
   }
 
   const userExist = await User.findOne({ email });
@@ -34,7 +34,7 @@ export const registerUser = async (data) => {
 
 export const loginUser = async (email, password) => {
   if (!email || !password) {
-    throw new ValidationError( "Email and password are required");
+    throw new ValidationError("Email and password are required");
   }
 
   const user = await User.findOne({ email }).populate("role");
@@ -44,11 +44,12 @@ export const loginUser = async (email, password) => {
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
+  console.log("user", user, email, password, user.password);
 
   if (!isMatch) {
     throw new ApiError(401, "Invalid credentials");
   }
-
+  user.tokenVersion = (user.tokenVersion || 0) + 1;
   const tokens = generateTokens(user);
 
   // ✅ FIX HERE
@@ -113,10 +114,12 @@ export const logoutUser = async (userId) => {
 };
 
 export const getUserData = async (userId) => {
-  const user = await User.findOne({ _id: userId }).populate({
-    path: "role",
-    populate: { path: "permissions" ,select:"name module"},
-  });
+  const user = await User.findOne({ _id: userId })
+    .select("-password -refreshToken")
+    .populate({
+      path: "role",
+      populate: { path: "permissions", select: "name module" },
+    });
 
   if (!user) {
     throw new NotFoundError("User not found");

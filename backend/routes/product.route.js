@@ -6,7 +6,7 @@ const { validateObjectId } = require("../middleware/validateId.middleware.js");
 const { authenticate } = require("../middleware/auth.middleware.js");
 const { withActivityLog } = require("../utils/withActivityLog.js");
 const { validate } = require("../middleware/validation.middleware.js");
-const { createProductSchema, getProductsSchema, deleteProductSchema, updateProductSchema } = require("../services/product.service.js");
+const { createProductSchema, getProductsSchema, updateProductSchema, deleteProductSchema } = require("../validators/product.validation.js");
 
 // CREATE PRODUCT
 router.post(
