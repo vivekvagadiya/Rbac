@@ -9,6 +9,7 @@ import React, {
 import { tokenService } from "../api/tokenService";
 import { loginApi, logoutApi } from "../api/authApi";
 import { getUserProfile } from "../api/user.api";
+import { toast } from "react-hot-toast"
 
 // Context
 // eslint-disable-next-line react-refresh/only-export-components
@@ -71,11 +72,12 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (credentials) => {
     try {
       const res = await loginApi(credentials);
+      toast.success(res?.message||"login in successful")
 
       const userData = await fetchUserProfile();
       return userData;
     } catch (error) {
-      console.error("Login error:", error);
+      toast.error(error?.message ||"failed")
       throw error;
     }
   }, [fetchUserProfile]);
@@ -85,9 +87,13 @@ export const AuthProvider = ({ children }) => {
    */
   const logout = useCallback(async () => {
     try {
-      await logoutApi();
+      const res = await logoutApi();
+      console.log(res);
+      
+      toast.success(res.message || "logout successfully")
     } catch (error) {
       console.warn("Logout API failed:", error);
+      toast.error(error?.message || "failed to logout")
     } finally {
       setUser(null);
     }

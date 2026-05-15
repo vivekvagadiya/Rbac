@@ -2,6 +2,7 @@
 
 import axios from "axios";
 import { tokenService } from "./tokenService";
+import {toast} from 'react-hot-toast'
 
 //  Main API client
 const api = axios.create({
@@ -45,40 +46,44 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// ============================
-//  RESPONSE INTERCEPTOR
-// ============================
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 
-    //  If no response → network error
+    // 1. NETWORK ERRORS (Server is down)
     if (!error.response) {
+      toast.error("Network error. Please check your internet connection.");
       return Promise.reject(error);
     }
 
-    //  Only handle 401
-    if (error.response.status !== 401) {
+    const status = error.response.status;
+    const errorMessage = error.response.data?.message || "Something went wrong";
+
+    // 2. LOGOUT LOGIC (Session Versioning / Refresh Failed)
+    // We handle the specific 401 redirect errors in the catch block below.
+    
+    // 3. OTHER ERRORS (403, 400, 404, 500)
+    // We ignore 401 here because it might be refreshed successfully.
+    if (status !== 401) {
+      toast.error(errorMessage);
       return Promise.reject(error.response?.data || error);
     }
 
+    // --- 401 Handling Logic ---
     if (originalRequest.url.includes("/auth/login")) {
+      toast.error(errorMessage); // Wrong password/email
       return Promise.reject(error.response?.data || error);
     }
 
-    //  Prevent refresh loop
-    if (originalRequest._retry) {
-      return Promise.reject(error.response?.data || error);
-    }
-    //  Do NOT retry refresh endpoint
-    if (originalRequest.url.includes("/auth/refresh")) {
+    if (originalRequest._retry || originalRequest.url.includes("/auth/refresh")) {
       return Promise.reject(error.response?.data || error);
     }
 
     originalRequest._retry = true;
 
-    //  If already refreshing → queue request
     if (isRefreshing) {
       return new Promise((resolve) => {
         addSubscriber((newToken) => {
@@ -92,39 +97,24 @@ api.interceptors.response.use(
 
     try {
       const refreshToken = tokenService.getRefreshToken();
+      if (!refreshToken) throw new Error("No refresh token available");
 
-      if (!refreshToken) {
-        throw new Error("No refresh token available");
-      }
-
-      //  Call refresh API (using separate client)
-      const response = await refreshClient.post("/auth/refresh", {
-        refreshToken,
-      });
-
+      const response = await refreshClient.post("/auth/refresh", { refreshToken });
       const { accessToken, refreshToken: newRefreshToken } = response.data.data;
 
-      //  Save new tokens
-      tokenService.setTokens({
-        accessToken,
-        refreshToken: newRefreshToken,
-      });
-
-      //  Retry all queued requests
+      tokenService.setTokens({ accessToken, refreshToken: newRefreshToken });
       onRefreshed(accessToken);
-
-      //  Retry original request
       originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
       return api(originalRequest);
     } catch (err) {
-      //  Clear subscribers to avoid memory leak
+      // 4. SESSION KILLED (Single session logic triggered here)
+      const sessionError = err.response?.data?.message || "Session expired. Please login again.";
+      
+      toast.error(sessionError, { id: "session-expired" }); // Use an ID to prevent duplicate toasts
+
       refreshSubscribers = [];
-
-      //  Logout user
       tokenService.clearTokens();
-
-      //  Temporary (will replace with AuthContext later)
       window.location.href = "/login";
 
       return Promise.reject(err.response?.data || err);
