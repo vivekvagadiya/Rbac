@@ -10,8 +10,8 @@ const seedOrders = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB Connected");
     // Get existing users & products
-    const users = await User.find().limit(3);
-    const products = await Product.find().limit(5);
+    const users = await User.find({});
+    const products = await Product.find();
 
     if (!users.length || !products.length) {
       throw new Error("Users or Products not found. Seed them first.");

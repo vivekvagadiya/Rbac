@@ -16,11 +16,8 @@ export const registerUser = async (data) => {
     throw new ApiError(409, "User already exists");
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   const user = await User.create({
     ...data,
-    password: hashedPassword,
   });
 
   const safeUser = {

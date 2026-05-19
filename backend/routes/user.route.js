@@ -6,6 +6,7 @@ const { checkPermission } = require("../middleware/permission.middleware.js");
 const { validateObjectId } = require("../middleware/validateId.middleware.js");
 const { withActivityLog } = require("../utils/withActivityLog.js");
 const { validate } = require("../middleware/validation.middleware.js");
+const upload = require("../middleware/upload.middleware");
 const { getUsersSchema, getUserByIdSchema, updateUserSchema, createUserSchema, deleteUserSchema, assignRoleSchema, toggleBlockSchema } = require("../validators/user.validation.js");
 
 router.get(
@@ -32,9 +33,7 @@ router.put(
     action: "UPDATE_USER",
     resource: "USER",
     resourceId: req.params.id,
-    description: err
-      ? `Failed to update user: ${err.message}`
-      : `User updated`,
+    description: err ? `Failed to update user: ${err.message}` : `User updated`,
     metadata: {
       updatedFields: req.body,
     },
@@ -50,9 +49,7 @@ router.post(
     action: "CREATE_USER",
     resource: "USER",
     resourceId: result?._id || null,
-    description: err
-      ? `Failed to create user: ${err.message}`
-      : `User created`,
+    description: err ? `Failed to create user: ${err.message}` : `User created`,
     metadata: {
       body: req.body,
     },
@@ -106,6 +103,25 @@ router.patch(
       : `User block status changed`,
     metadata: {
       updatedFields: req.body,
+    },
+  })),
+);
+
+router.post(
+  "/profile-picture",
+  authenticate,
+  upload.single("file"),
+  withActivityLog(userController.uploadProfilePicture, (req, result, err) => ({
+    action: "UPLOAD_PROFILE_PICTURE",
+    resource: "USER",
+    resourceId: req.user._id,
+    description: err
+      ? `Failed to upload profile picture: ${err.message}`
+      : `Profile picture uploaded`,
+    metadata: {
+      fileName: req.file?.originalname,
+      fileSize: req.file?.size,
+      mimeType: req.file?.mimetype,
     },
   })),
 );

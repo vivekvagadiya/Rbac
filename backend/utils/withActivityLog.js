@@ -29,6 +29,7 @@ exports.withActivityLog = (handler, config) => {
           resource: logData?.resource || "UNKNOWN",
           resourceId: req.params.id || null,
           description: err.message,
+          ...logData,
         });
       } catch (logErr) {
         console.error("Logging failed:", logErr.message);

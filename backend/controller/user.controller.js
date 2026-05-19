@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError.js";
 
 export const createUser = async (req, res, next) => {
   try {
-    const { name, email, password, roleId ,isBlocked} = req.body;
+    const { name, email, password, roleId, isBlocked } = req.body;
 
     const user = await userService.createUser(req.body);
 
@@ -22,7 +22,7 @@ export const getUsers = async (req, res, next) => {
   try {
     const { page, limit } = req.query;
 
-    const result = await userService.getUsers(req.query,req.user._id);
+    const result = await userService.getUsers(req.query, req.user._id);
 
     res.status(200).json({
       success: true,
@@ -78,7 +78,7 @@ export const deleteUser = async (req, res, next) => {
 
     if (req.user._id.toString() === userId) {
       return next(
-        new ApiError(400, "You cannot perform this action on yourself")
+        new ApiError(400, "You cannot perform this action on yourself"),
       );
     }
 
@@ -136,7 +136,21 @@ export const toggleBlockUser = async (req, res, next) => {
       data: user,
     });
 
-    return user
+    return user;
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadProfilePicture = async (req, res, next) => {
+  try {
+    const user = await userService.uploadProfilePicture(req.user._id, req.file.buffer);
+
+    res.status(200).json({
+      success: true,
+      message: "Profile picture uploaded successfully",
+      data: user,
+    });
   } catch (error) {
     next(error);
   }

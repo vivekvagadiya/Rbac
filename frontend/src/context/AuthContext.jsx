@@ -77,8 +77,7 @@ export const AuthProvider = ({ children }) => {
       const userData = await fetchUserProfile();
       return userData;
     } catch (error) {
-      toast.error(error?.message ||"failed")
-      throw error;
+      throw error; // Let the component handle the error display
     }
   }, [fetchUserProfile]);
 
