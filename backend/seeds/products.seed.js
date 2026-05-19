@@ -1,7 +1,7 @@
 require("dotenv").config({path:"../.env"});
 const mongoose = require("mongoose");
 const Product = require("../models/product.model.js"); // adjust path
-
+const User=require('../models/user.model.js')
 const MONGO_URI = process.env.MONGO_URI; // change
 
 // Optional: put a valid User _id if you want createdBy
@@ -49,16 +49,17 @@ const getRandomStock = () => Math.floor(Math.random() * 100);
 const seedProducts = async () => {
   try {
     await mongoose.connect(MONGO_URI);
+    const users=await User.find();
     console.log("✅ MongoDB Connected");
 
-    const products = productNames.map((name) => ({
+    const products = productNames.map((name,index) => ({
       name,
       price: getRandomPrice(),
       description: `${name} - High quality product for daily use`,
       category: getRandom(categories),
       stock: getRandomStock(),
       isActive: true,
-      createdBy: USER_ID || undefined,
+      createdBy: getRandom(users)._id || undefined,
     }));
 
     // Upsert (avoid duplicates by name)
