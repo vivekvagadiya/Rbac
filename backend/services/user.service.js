@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
 import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
 import bcrypt from "bcryptjs";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 //  Create User (Admin side)
 
@@ -269,4 +270,35 @@ export const toggleBlockUser = async (userId, isBlocked) => {
   }
 
   return user;
+};
+
+export const uploadProfilePicture = async (userId, fileBuffer) => {
+  try {
+    // FILE CHECK
+    if (!fileBuffer) {
+      throw new ApiError(400, "No file uploaded");
+    }
+
+    // UPLOAD TO CLOUDINARY
+    const result = await uploadToCloudinary(fileBuffer);
+
+    // SAVE URL IN DATABASE
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        profilePicture: result.secure_url,
+      },
+      {
+        new: true,
+      },
+    ).select("-password -refreshToken -tokenVersion");
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    return user;
+  } catch (error) {
+    throw error;
+  }
 };
