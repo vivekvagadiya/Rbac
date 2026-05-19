@@ -1,11 +1,17 @@
 import * as userService from "../services/user.service.js";
 import ApiError from "../utils/ApiError.js";
+import emailService from "../services/email.service.js";
 
 export const createUser = async (req, res, next) => {
   try {
     const { name, email, password, roleId, isBlocked } = req.body;
 
     const user = await userService.createUser(req.body);
+
+    // Send welcome email (async - don't block response)
+    emailService.sendWelcomeEmail(user).catch(error => {
+      console.error('Failed to send welcome email:', error.message);
+    });
 
     res.status(201).json({
       success: true,
@@ -103,7 +109,17 @@ export const assignRoleToUser = async (req, res, next) => {
       throw new ApiError(400, "You cannot perform this action on yourself");
     }
 
+    // Get user before update to get old role
+    const oldUser = await userService.getUserById(req.params.id);
+    const oldRole = oldUser.role?.name || 'Not assigned';
+
     const user = await userService.assignRoleToUser(req.params.id, roleId);
+    const newRole = user.role?.name || 'Not assigned';
+
+    // Send role change email (async - don't block response)
+    emailService.sendRoleChangeEmail(user, oldRole, newRole).catch(error => {
+      console.error('Failed to send role change email:', error.message);
+    });
 
     res.status(200).json({
       success: true,
@@ -127,6 +143,11 @@ export const toggleBlockUser = async (req, res, next) => {
     }
 
     const user = await userService.toggleBlockUser(req.params.id, isBlocked);
+
+    // Send account status email (async - don't block response)
+    emailService.sendAccountStatusEmail(user, isBlocked ? 'blocked' : 'unblocked').catch(error => {
+      console.error('Failed to send account status email:', error.message);
+    });
 
     res.status(200).json({
       success: true,

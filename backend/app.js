@@ -5,8 +5,14 @@ const helmet = require("helmet");
 // const { seedPermissions } = require("./seeds/permission.seed");
 // const seedOrders = require("./seeds/order.seed");
 const errorHandler = require("./middleware/error.middleware").default;
+const { verifyEmailConnection } = require("./utils/email");
 
 const app = express();
+connectDB();
+
+// Verify email connection on startup
+verifyEmailConnection();
+
 app.use(
   cors({
     origin: [
