@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const helmet = require("helmet");
 // const { seedPermissions } = require("./seeds/permission.seed");
 // const seedOrders = require("./seeds/order.seed");
 const errorHandler = require("./middleware/error.middleware").default;
@@ -19,6 +20,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use(helmet());
 app.use("/api/auth", require("./routes/auth.route"));
 app.use("/api/roles", require("./routes/role.route"));
 app.use("/api/products", require("./routes/product.route"));
