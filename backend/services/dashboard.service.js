@@ -7,9 +7,9 @@ export const dashboardStats = async () => {
     Order.countDocuments(),
     Product.countDocuments(),
     Order.aggregate([
-      {
-        $match: { status: "cancelled" },
-      },
+      // {
+      //   $match: { status: "cancelled" },
+      // },
       {
         $group: {
           _id: null,

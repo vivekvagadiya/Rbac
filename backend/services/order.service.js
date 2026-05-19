@@ -66,7 +66,7 @@ export const createOrder = async (data, userId) => {
   return order;
 };
 
-export const getOrders = async (query) => {
+export const getOrders = async (query, loginUser) => {
   let { page = 1, limit = 10, status, user, search } = query;
 
   page = Math.max(1, parseInt(page) || 1);
@@ -78,6 +78,10 @@ export const getOrders = async (query) => {
 
   if (status) match.status = status;
 
+  if (loginUser.role.name === "user") {
+    match.createdBy = loginUser._id;
+  }
+
   if (user && mongoose.Types.ObjectId.isValid(user)) {
     match.user = new mongoose.Types.ObjectId(user);
   }
@@ -86,10 +90,7 @@ export const getOrders = async (query) => {
   if (search) {
     const searchRegex = new RegExp(search, "i");
 
-    match.$or = [
-      { "user.name": searchRegex },
-      { "user.email": searchRegex },
-    ];
+    match.$or = [{ "user.name": searchRegex }, { "user.email": searchRegex }];
 
     // Optional: search by Order ID
     if (mongoose.Types.ObjectId.isValid(search)) {

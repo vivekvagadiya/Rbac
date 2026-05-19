@@ -5,8 +5,10 @@ import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
  * GET PRODUCTS (Pagination)
  */
 
-export const getProducts = async (query) => {
+export const getProducts = async (query,user) => {
   let { page = 1, limit = 10, search, isActive, category } = query;
+  console.log('user',user);
+  
 
   page = Math.max(1, parseInt(page) || 1);
   limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
@@ -24,6 +26,10 @@ export const getProducts = async (query) => {
   //  Category
   if (category) {
     filter.category = category;
+  }
+
+  if(user.role.name==='user'){
+    filter.createdBy=user._id;
   }
 
   //  Status (BOOLEAN ONLY)

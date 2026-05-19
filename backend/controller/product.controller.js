@@ -6,7 +6,7 @@ import * as productService from "../services/product.service.js";
  */
 export const getProducts = async (req, res, next) => {
   try {
-    const result = await productService.getProducts(req.query);
+    const result = await productService.getProducts(req.query,req.user);
 
     return res.status(200).json({
       success: true,

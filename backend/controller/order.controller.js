@@ -19,7 +19,7 @@ export const createOrder = async (req, res, next) => {
 
 export const getOrders = async (req, res, next) => {
   try {
-    const result = await orderService.getOrders(req.query);
+    const result = await orderService.getOrders(req.query,req.user);
 
     return res.status(200).json({
       success: true,
