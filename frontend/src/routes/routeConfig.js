@@ -11,11 +11,23 @@ const UnAuthorized = lazy(() => import("../pages/Unauthorized/UnAuthorized"));
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 const RolePage = lazy(() => import("../pages/Role/RolePage"));
 const Profile = lazy(() => import("../pages/Profile/Profile"));
+const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 
 export const routes = [
   {
     path: "/login",
     element: Login,
+    public: true,
+  },
+  {
+    path: "/forgot-password",
+    element: ForgotPassword,
+    public: true,
+  },
+  {
+    path: "/reset-password",
+    element: ResetPassword,
     public: true,
   },
   {

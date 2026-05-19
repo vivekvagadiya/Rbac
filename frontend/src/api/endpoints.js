@@ -5,6 +5,8 @@ export const endpoints = {
     login: `${baseUrl}/auth/login`,
     refresh: `${baseUrl}/auth/refresh`,
     logout: `${baseUrl}/auth/logout`,
+    forgotPassword: `${baseUrl}/auth/forgot-password`,
+    resetPassword: `${baseUrl}/auth/reset-password`,
   },
   user: {
     profile: `${baseUrl}/auth/profile`,
@@ -38,6 +40,6 @@ export const endpoints = {
   },
   dashboard: {
     stats: `${baseUrl}/dashboard/stats`,
-    activityStats:`${baseUrl}/activity`
+    activityStats: `${baseUrl}/activity`,
   },
 };

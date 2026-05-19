@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import { Link } from "@mui/material";
 
 const Login = () => {
   const { login, isAuthenticated, loading } = useContext(AuthContext);
@@ -97,6 +98,17 @@ const Login = () => {
         >
           {btnLoading ? <CircularProgress size={24} /> : "Login"}
         </Button>
+
+        <Box sx={{ mt: 2, textAlign: "center" }}>
+          <Link
+            component="button"
+            variant="body2"
+            onClick={() => navigate("/forgot-password")}
+            sx={{ cursor: "pointer" }}
+          >
+            Forgot your password?
+          </Link>
+        </Box>
       </Paper>
     </Box>
   );
