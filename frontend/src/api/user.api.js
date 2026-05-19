@@ -49,3 +49,16 @@ export const deleteUserApi = async (id) => {
     throw error?.errors?.[0] || error;
   }
 };
+
+export const uploadPicture = async (data) => {
+  try {
+    const response = await api.post(endpoints.user.uploadPicture, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response?.data;
+  } catch (error) {
+    throw error?.errors?.[0] || error;
+  }
+};

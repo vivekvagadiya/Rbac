@@ -12,6 +12,7 @@ export const endpoints = {
     createUser: `${baseUrl}/users`,
     updateUser: `${baseUrl}/users/:id`,
     deleteUser: `${baseUrl}/users/:id`,
+    uploadPicture: `${baseUrl}/users/profile-picture`,
   },
   product: {
     getProduct: `${baseUrl}/products`,
