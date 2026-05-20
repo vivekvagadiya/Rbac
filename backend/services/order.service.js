@@ -107,6 +107,13 @@ export const getOrders = async (query, loginUser) => {
           localField: "user",
           foreignField: "_id",
           as: "user",
+          pipeline:[
+            {
+              $project:{
+                name:1,email:1,_id:1
+              }
+            }
+          ]
         },
       },
       { $unwind: "$user" },
@@ -140,6 +147,16 @@ export const getOrders = async (query, loginUser) => {
           localField: "user",
           foreignField: "_id",
           as: "user",
+          pipeline: [
+            {
+              $project: {
+                name: 1,
+                email: 1,
+                _id: 1,
+
+              },
+            },
+          ],
         },
       },
       { $unwind: "$user" },
@@ -188,6 +205,19 @@ export const updateOrderStatus = async (id, newStatus, userId) => {
     throw new ValidationError("Cannot update refunded order");
   }
 
+  // Restore stock if order is being cancelled
+  if (newStatus === "cancelled" && order.status !== "cancelled") {
+    await Promise.all(
+      order.products.map((item) =>
+        Product.updateOne(
+          { _id: item.product },
+          { $inc: { stock: item.quantity } },
+        ),
+      ),
+    );
+    console.log(`Stock restored for cancelled order ${id}`);
+  }
+
   order.status = newStatus;
   order.updatedBy = userId;
   await order.save();
@@ -212,6 +242,17 @@ export const refundOrder = async (id, userId) => {
   if (order.isRefunded) {
     throw new ValidationError("Order is already refunded");
   }
+
+  // Restore stock when order is refunded
+  await Promise.all(
+    order.products.map((item) =>
+      Product.updateOne(
+        { _id: item.product },
+        { $inc: { stock: item.quantity } },
+      ),
+    ),
+  );
+  console.log(`Stock restored for refunded order ${id}`);
 
   order.isRefunded = true;
   order.updatedBy = userId;

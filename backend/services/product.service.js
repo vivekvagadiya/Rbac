@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Product from "../models/product.model.js";
 import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
 
@@ -20,7 +21,7 @@ export const getProducts = async (query,user) => {
   //  Search
   if (search?.trim()) {
     const regex = new RegExp(search.trim(), "i");
-    filter.$or = [{ name: regex }, { description: regex }];
+    filter.$or = [{ name: regex }, { description: regex }, { _id: regex }];
   }
 
   //  Category
@@ -77,16 +78,24 @@ export const updateProduct = async (id, data, userId) => {
     throw new ValidationError("No data provided for update");
   }
 
+  // Ensure userId is a valid ObjectId
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ValidationError("Invalid user ID");
+  }
+
+  // Remove any updatedBy from data to prevent conflicts
+  const { updatedBy, ...cleanData } = data;
+
   const updatedProduct = await Product.findOneAndUpdate(
-    { _id: id},
+    { _id: id },
     {
       $set: {
-        ...data,
+        ...cleanData,
         updatedBy: userId,
       },
     },
     {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     },
   ).lean();

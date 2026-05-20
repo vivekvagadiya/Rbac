@@ -60,14 +60,17 @@ export const updateProduct = async (req, res, next) => {
     const { id } = req.params;
     const { name, description, price, category, stock, isActive } = req.body;
 
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (price !== undefined) updateData.price = price;
+    if (category !== undefined) updateData.category = category;
+    if (stock !== undefined) updateData.stock = stock;
+    if (isActive !== undefined) updateData.isActive = isActive;
+
     const updatedProduct = await productService.updateProduct(
       id,
-      name,
-      description,
-      price,
-      category,
-      stock,
-      isActive,
+      updateData,
       req.user._id,
     );
 

@@ -110,6 +110,22 @@ async function handleExpiredSession(session) {
   try {
     const orderId = session.metadata.orderId;
     
+    // Get order details to restore stock
+    const order = await Order.findById(orderId);
+    
+    if (order) {
+      // Restore stock for expired payment
+      await Promise.all(
+        order.products.map((item) =>
+          Product.updateOne(
+            { _id: item.product },
+            { $inc: { stock: item.quantity } },
+          ),
+        ),
+      );
+      console.log(`Stock restored for expired payment order ${orderId}`);
+    }
+    
     // Update order status
     await Order.findByIdAndUpdate(orderId, {
       status: 'cancelled',
@@ -129,6 +145,17 @@ async function handleFailedPayment(paymentIntent) {
     const order = await Order.findOne({ stripeSessionId: paymentIntent.id });
     
     if (order) {
+      // Restore stock for failed payment
+      await Promise.all(
+        order.products.map((item) =>
+          Product.updateOne(
+            { _id: item.product },
+            { $inc: { stock: item.quantity } },
+          ),
+        ),
+      );
+      console.log(`Stock restored for failed payment order ${order._id}`);
+      
       await Order.findByIdAndUpdate(order._id, {
         status: 'cancelled',
         paymentStatus: 'FAILED',

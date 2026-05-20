@@ -4,12 +4,11 @@ import mongoose from "mongoose";
 /**
  * OBJECT ID VALIDATION
  */
-const objectIdSchema = z.string().refine(
-  (id) => mongoose.Types.ObjectId.isValid(id),
-  {
+const objectIdSchema = z
+  .string()
+  .refine((id) => mongoose.Types.ObjectId.isValid(id), {
     message: "Invalid product id",
-  },
-);
+  });
 
 /**
  * CREATE PRODUCT SCHEMA
@@ -22,10 +21,7 @@ export const createProductSchema = z.object({
       .min(2, "Product name must be at least 2 characters")
       .max(100, "Product name too long"),
 
-    description: z
-      .string()
-      .max(500, "Description too long")
-      .optional(),
+    description: z.string().max(500, "Description too long").optional(),
 
     price: z
       .number({
@@ -34,10 +30,7 @@ export const createProductSchema = z.object({
       })
       .min(0, "Price cannot be negative"),
 
-    category: z
-      .string()
-      .trim()
-      .min(1, "Category is required"),
+    category: z.string().trim().min(1, "Category is required"),
 
     stock: z
       .number({
@@ -67,10 +60,7 @@ export const updateProductSchema = z.object({
         .max(100, "Product name too long")
         .optional(),
 
-      description: z
-        .string()
-        .max(1000, "Description too long")
-        .optional(),
+      description: z.string().max(1000, "Description too long").optional(),
 
       price: z
         .number({
@@ -79,11 +69,7 @@ export const updateProductSchema = z.object({
         .min(0, "Price cannot be negative")
         .optional(),
 
-      category: z
-        .string()
-        .trim()
-        .min(1, "Category cannot be empty")
-        .optional(),
+      category: z.string().trim().min(1, "Category cannot be empty").optional(),
 
       stock: z
         .number({
@@ -113,22 +99,16 @@ export const deleteProductSchema = z.object({
  */
 export const getProductsSchema = z.object({
   query: z.object({
-    page: z
-      .string()
-      .regex(/^\d+$/, "Page must be a number")
-      .optional(),
+    page: z.string().regex(/^\d+$/, "Page must be a number").optional(),
 
-    limit: z
-      .string()
-      .regex(/^\d+$/, "Limit must be a number")
-      .optional(),
+    limit: z.string().regex(/^\d+$/, "Limit must be a number").optional(),
 
     search: z.string().optional(),
 
     category: z.string().optional(),
 
-    isActive: z
-      .enum(["true", "false"])
-      .optional(),
+    isActive: z.enum(["true", "false"]).optional(),
+
+    id: objectIdSchema.optional(),
   }),
 });
