@@ -13,6 +13,9 @@ const RolePage = lazy(() => import("../pages/Role/RolePage"));
 const Profile = lazy(() => import("../pages/Profile/Profile"));
 const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
+const PaymentPage = lazy(() => import("../pages/Payment/PaymentPage"));
+const PaymentSuccess = lazy(() => import("../pages/Payment/PaymentSuccess"));
+const PaymentCancel = lazy(() => import("../pages/Payment/PaymentCancel"));
 
 export const routes = [
   {
@@ -28,6 +31,21 @@ export const routes = [
   {
     path: "/reset-password",
     element: ResetPassword,
+    public: true,
+  },
+  {
+    path: "/payment",
+    element: PaymentPage,
+    public: true,
+  },
+  {
+    path: "/payment/success",
+    element: PaymentSuccess,
+    public: true,
+  },
+  {
+    path: "/payment/cancel",
+    element: PaymentCancel,
     public: true,
   },
   {

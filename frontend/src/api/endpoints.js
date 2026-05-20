@@ -42,4 +42,8 @@ export const endpoints = {
     stats: `${baseUrl}/dashboard/stats`,
     activityStats: `${baseUrl}/activity`,
   },
+  payment:{
+    checkout:`${baseUrl}/payments/create-checkout-session`,
+    verify:`${baseUrl}/payments/verify-session/:sessionId`
+  }
 };

@@ -1,0 +1,290 @@
+.payment-cancel-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.cancel-content {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Cancel Icon */
+.cancel-icon {
+  margin-bottom: 30px;
+}
+
+.cancel-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #dc3545;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: scaleIn 0.3s ease-out;
+}
+
+.cancel-x {
+  width: 30px;
+  height: 30px;
+  position: relative;
+}
+
+.cancel-x::before,
+.cancel-x::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background: white;
+  top: 50%;
+  left: 50%;
+}
+
+.cancel-x::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.cancel-x::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Content Styling */
+.cancel-content h1 {
+  color: #333;
+  font-size: 2.5em;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.cancel-message {
+  color: #666;
+  font-size: 1.1em;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+/* Cancel Info Section */
+.cancel-info {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.cancel-info h2 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.3em;
+  font-weight: 600;
+  text-align: center;
+}
+
+.cancel-info > p {
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.info-points {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.info-point {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
+  border-left: 4px solid #dc3545;
+}
+
+.point-icon {
+  font-size: 1.5em;
+  flex-shrink: 0;
+}
+
+.point-content strong {
+  color: #333;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.point-content p {
+  color: #666;
+  font-size: 0.9em;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-support {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1em;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+/* Support Section */
+.support-section {
+  background: #e3f2fd;
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 30px;
+}
+
+.support-section h3 {
+  color: #1976d2;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.support-section > p {
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.btn-support {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  color: white;
+}
+
+.btn-support:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(25, 118, 210, 0.4);
+}
+
+/* Reassurance Section */
+.reassurance {
+  background: #f1f8e9;
+  border-radius: 10px;
+  padding: 20px;
+  border-left: 4px solid #4caf50;
+}
+
+.reassurance p {
+  color: #555;
+  font-size: 0.9em;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.reassurance strong {
+  color: #2e7d32;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cancel-content {
+    padding: 30px 20px;
+    margin: 10px;
+  }
+  
+  .cancel-content h1 {
+    font-size: 2em;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .btn-primary,
+  .btn-secondary,
+  .btn-support {
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .info-point {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .point-icon {
+    align-self: center;
+  }
+}
+
+/* Animation for hover effects */
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-support:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Smooth transitions */
+.cancel-content,
+.cancel-info,
+.support-section,
+.reassurance {
+  transition: all 0.3s ease;
+}
+
+.cancel-content:hover,
+.cancel-info:hover,
+.support-section:hover,
+.reassurance:hover {
+  transform: translateY(-1px);
+}
