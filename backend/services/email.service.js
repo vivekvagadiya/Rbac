@@ -293,16 +293,41 @@ class EmailService {
    * Order Status Update
    */
   async sendOrderStatusEmail(user, order, newStatus) {
+    // Format products for email
+    const productItems = order.products?.map(item => 
+      `<div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+        <p><strong>${item.product?.name || 'Product'}</strong></p>
+        <p>Quantity: ${item.quantity} | Price: $${item.price}</p>
+        <p>Subtotal: $${(item.quantity * item.price).toFixed(2)}</p>
+      </div>`
+    ).join('') || '<p>No product details available</p>';
+
+    // Status-specific messages
+    const statusMessages = {
+      pending: "Your order has been received and is being processed.",
+      confirmed: "Your order has been confirmed and is being prepared.",
+      shipped: "Your order has been shipped and is on its way!",
+      delivered: "Your order has been delivered successfully.",
+      cancelled: "Your order has been cancelled."
+    };
+
+    const statusMessage = statusMessages[newStatus] || "Your order status has been updated.";
+
     const content = `
       <h2>📦 Order Status Update</h2>
       <p>Hello <strong>${user.name}</strong>,</p>
-      <p>Your order status has been updated.</p>
+      <p>${statusMessage}</p>
       
       <div class="info-box">
         <p><strong>Order ID:</strong> ${order._id}</p>
-        <p><strong>Total Amount:</strong> $${order.totalAmount}</p>
-        <p><strong>New Status:</strong> ${newStatus}</p>
+        <p><strong>Status:</strong> <span style="color: #1976d2; font-weight: bold;">${newStatus.toUpperCase()}</span></p>
+        <p><strong>Total Amount:</strong> $${order.totalAmount?.toFixed(2) || '0.00'}</p>
         <p><strong>Updated:</strong> ${new Date().toLocaleString()}</p>
+      </div>
+
+      <h3>Order Details:</h3>
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; margin: 20px 0;">
+        ${productItems}
       </div>
       
       <a href="${this.frontendUrl}/orders" class="button">View Order Details</a>
@@ -310,7 +335,7 @@ class EmailService {
       <p>You can track all your orders in the dashboard.</p>
     `;
 
-    const emailOptions = this.createBaseTemplate(`Order Status: ${newStatus}`, content);
+    const emailOptions = this.createBaseTemplate(`Order Status: ${newStatus.toUpperCase()}`, content);
     emailOptions.to = user.email;
 
     return this.sendEmail(emailOptions);

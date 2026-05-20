@@ -1,3 +1,4 @@
+import emailService from "../services/email.service.js";
 import * as orderService from "../services/order.service.js";
 
 export const createOrder = async (req, res, next) => {
@@ -45,6 +46,14 @@ export const updateOrderStatus = async (req, res, next) => {
       status,
       req.user._id
     );
+
+    // Get populated order data for email
+    const populatedOrder = await orderService.getOrderById(id);
+
+    // Send email to the actual order customer, not the admin updating it
+    emailService.sendOrderStatusEmail(populatedOrder.user, populatedOrder, status).catch(error => {
+      console.error('Failed to send order status email:', error.message);
+    });
 
     res.status(200).json({
       success: true,
