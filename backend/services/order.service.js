@@ -101,6 +101,7 @@ export const getOrders = async (query, loginUser) => {
   const [orders, total] = await Promise.all([
     Order.aggregate([
       // 🔥 JOIN FIRST (so we can search user fields)
+      { $match: match },
       {
         $lookup: {
           from: "users",
@@ -119,7 +120,6 @@ export const getOrders = async (query, loginUser) => {
       { $unwind: "$user" },
 
       // 🔥 NOW apply filters + search
-      { $match: match },
 
       { $sort: { createdAt: -1 } },
       { $skip: skip },
@@ -127,7 +127,15 @@ export const getOrders = async (query, loginUser) => {
 
       {
         $addFields: {
-          productsCount: { $size: "$products" },
+          productsCount: {
+            $sum: {
+              $map: {
+                input: "$products",
+                as: "product",
+                in: { $ifNull: ["$$product.quantity", 0] }
+              }
+            }
+          },
         },
       },
 
@@ -141,6 +149,7 @@ export const getOrders = async (query, loginUser) => {
 
     // ⚠️ total count must also include search
     Order.aggregate([
+      { $match: match },
       {
         $lookup: {
           from: "users",
@@ -160,7 +169,6 @@ export const getOrders = async (query, loginUser) => {
         },
       },
       { $unwind: "$user" },
-      { $match: match },
       { $count: "total" },
     ]),
   ]);
