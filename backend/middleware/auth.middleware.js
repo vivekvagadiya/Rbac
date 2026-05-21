@@ -18,6 +18,7 @@ export const authenticate = async (req, res, next) => {
     // Optimized fetch: only get what we need
     const user = await User.findById(decoded.id)
       .select("_id role isBlocked isDeleted tokenVersion")
+      .populate("role", "name")
       .lean();
 
     if (!user || user.isDeleted) throw new ApiError(401, "User not found");

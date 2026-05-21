@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Product from "../models/product.model.js";
 import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
 
@@ -5,8 +6,9 @@ import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
  * GET PRODUCTS (Pagination)
  */
 
-export const getProducts = async (query) => {
+export const getProducts = async (query, user) => {
   let { page = 1, limit = 10, search, isActive, category } = query;
+  console.log("user", user);
 
   page = Math.max(1, parseInt(page) || 1);
   limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
@@ -19,11 +21,21 @@ export const getProducts = async (query) => {
   if (search?.trim()) {
     const regex = new RegExp(search.trim(), "i");
     filter.$or = [{ name: regex }, { description: regex }];
+
+    if (mongoose.Types.ObjectId.isValid(search.trim())) {
+      filter.$or.push({
+        _id: new mongoose.Types.ObjectId(search.trim()),
+      });
+    }
   }
 
   //  Category
   if (category) {
     filter.category = category;
+  }
+
+  if (user.role.name === "user") {
+    filter.createdBy = user._id;
   }
 
   //  Status (BOOLEAN ONLY)
@@ -71,16 +83,24 @@ export const updateProduct = async (id, data, userId) => {
     throw new ValidationError("No data provided for update");
   }
 
+  // Ensure userId is a valid ObjectId
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ValidationError("Invalid user ID");
+  }
+
+  // Remove any updatedBy from data to prevent conflicts
+  const { updatedBy, ...cleanData } = data;
+
   const updatedProduct = await Product.findOneAndUpdate(
-    { _id: id},
+    { _id: id },
     {
       $set: {
-        ...data,
+        ...cleanData,
         updatedBy: userId,
       },
     },
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     },
   ).lean();

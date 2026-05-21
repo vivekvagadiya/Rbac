@@ -66,7 +66,7 @@ export const createOrder = async (data, userId) => {
   return order;
 };
 
-export const getOrders = async (query) => {
+export const getOrders = async (query, loginUser) => {
   let { page = 1, limit = 10, status, user, search } = query;
 
   page = Math.max(1, parseInt(page) || 1);
@@ -78,6 +78,10 @@ export const getOrders = async (query) => {
 
   if (status) match.status = status;
 
+  if (loginUser.role.name === "user") {
+    match.createdBy = loginUser._id;
+  }
+
   if (user && mongoose.Types.ObjectId.isValid(user)) {
     match.user = new mongoose.Types.ObjectId(user);
   }
@@ -86,10 +90,7 @@ export const getOrders = async (query) => {
   if (search) {
     const searchRegex = new RegExp(search, "i");
 
-    match.$or = [
-      { "user.name": searchRegex },
-      { "user.email": searchRegex },
-    ];
+    match.$or = [{ "user.name": searchRegex }, { "user.email": searchRegex }];
 
     // Optional: search by Order ID
     if (mongoose.Types.ObjectId.isValid(search)) {
@@ -100,18 +101,25 @@ export const getOrders = async (query) => {
   const [orders, total] = await Promise.all([
     Order.aggregate([
       // 🔥 JOIN FIRST (so we can search user fields)
+      { $match: match },
       {
         $lookup: {
           from: "users",
           localField: "user",
           foreignField: "_id",
           as: "user",
+          pipeline:[
+            {
+              $project:{
+                name:1,email:1,_id:1
+              }
+            }
+          ]
         },
       },
       { $unwind: "$user" },
 
       // 🔥 NOW apply filters + search
-      { $match: match },
 
       { $sort: { createdAt: -1 } },
       { $skip: skip },
@@ -119,7 +127,15 @@ export const getOrders = async (query) => {
 
       {
         $addFields: {
-          productsCount: { $size: "$products" },
+          productsCount: {
+            $sum: {
+              $map: {
+                input: "$products",
+                as: "product",
+                in: { $ifNull: ["$$product.quantity", 0] }
+              }
+            }
+          },
         },
       },
 
@@ -133,16 +149,26 @@ export const getOrders = async (query) => {
 
     // ⚠️ total count must also include search
     Order.aggregate([
+      { $match: match },
       {
         $lookup: {
           from: "users",
           localField: "user",
           foreignField: "_id",
           as: "user",
+          pipeline: [
+            {
+              $project: {
+                name: 1,
+                email: 1,
+                _id: 1,
+
+              },
+            },
+          ],
         },
       },
       { $unwind: "$user" },
-      { $match: match },
       { $count: "total" },
     ]),
   ]);
@@ -187,6 +213,19 @@ export const updateOrderStatus = async (id, newStatus, userId) => {
     throw new ValidationError("Cannot update refunded order");
   }
 
+  // Restore stock if order is being cancelled
+  if (newStatus === "cancelled" && order.status !== "cancelled") {
+    await Promise.all(
+      order.products.map((item) =>
+        Product.updateOne(
+          { _id: item.product },
+          { $inc: { stock: item.quantity } },
+        ),
+      ),
+    );
+    console.log(`Stock restored for cancelled order ${id}`);
+  }
+
   order.status = newStatus;
   order.updatedBy = userId;
   await order.save();
@@ -211,6 +250,17 @@ export const refundOrder = async (id, userId) => {
   if (order.isRefunded) {
     throw new ValidationError("Order is already refunded");
   }
+
+  // Restore stock when order is refunded
+  await Promise.all(
+    order.products.map((item) =>
+      Product.updateOne(
+        { _id: item.product },
+        { $inc: { stock: item.quantity } },
+      ),
+    ),
+  );
+  console.log(`Stock restored for refunded order ${id}`);
 
   order.isRefunded = true;
   order.updatedBy = userId;

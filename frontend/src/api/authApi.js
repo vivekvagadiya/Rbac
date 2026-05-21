@@ -1,4 +1,5 @@
 import api from "./axios";
+import { endpoints } from "./endpoints";
 import { tokenService } from "./tokenService";
 
 export const loginApi = async (data) => {
@@ -22,5 +23,23 @@ export const logoutApi = async () => {
     throw error?.errors?.[0] || error;
   } finally {
     tokenService.clearTokens();
+  }
+};
+
+export const forgotPassword = async (data) => {
+  try {
+    const response = await api.post(endpoints.auth.forgotPassword, data);
+    return response?.data;
+  } catch (error) {
+    throw error?.errors?.[0] || error;
+  }
+};
+
+export const resetPassword = async (data) => {
+  try {
+    const response = await api.post(endpoints.auth.resetPassword, data);
+    return response?.data;
+  } catch (error) {
+    throw error?.errors?.[0] || error;
   }
 };

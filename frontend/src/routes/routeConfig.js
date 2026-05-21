@@ -10,11 +10,42 @@ const MainLayout = lazy(() => import("../layouts/MainLayout"));
 const UnAuthorized = lazy(() => import("../pages/Unauthorized/UnAuthorized"));
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 const RolePage = lazy(() => import("../pages/Role/RolePage"));
+const Profile = lazy(() => import("../pages/Profile/Profile"));
+const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
+const PaymentPage = lazy(() => import("../pages/Payment/PaymentPage"));
+const PaymentSuccess = lazy(() => import("../pages/Payment/PaymentSuccess"));
+const PaymentCancel = lazy(() => import("../pages/Payment/PaymentCancel"));
 
 export const routes = [
   {
     path: "/login",
     element: Login,
+    public: true,
+  },
+  {
+    path: "/forgot-password",
+    element: ForgotPassword,
+    public: true,
+  },
+  {
+    path: "/reset-password",
+    element: ResetPassword,
+    public: true,
+  },
+  {
+    path: "/payment",
+    element: PaymentPage,
+    public: true,
+  },
+  {
+    path: "/payment/success",
+    element: PaymentSuccess,
+    public: true,
+  },
+  {
+    path: "/payment/cancel",
+    element: PaymentCancel,
     public: true,
   },
   {
@@ -59,6 +90,11 @@ export const routes = [
         element: RolePage,
         protected: true,
         permission: "role.read",
+      },
+      {
+        path: "profile",
+        element: Profile,
+        protected: true,
       },
       { path: "*", element: NotFound },
     ],

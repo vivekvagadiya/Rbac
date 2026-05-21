@@ -37,15 +37,20 @@ export const createUser = async (data) => {
   const user = await User.create({
     name,
     email,
-    password,                 // ✅ Let Mongoose pre-save hook hash it
+    password, // ✅ Let Mongoose pre-save hook hash it
     role: roleId,
     isBlocked: isBlocked,
   });
 
   // =========================
+  // 5. Populate role for email service
+  // =========================
+  const userWithRole = await User.findById(user._id).populate("role", "name");
+
+  // =========================
   // 6. Sanitize Response
   // =========================
-  const userObj = user.toObject();
+  const userObj = userWithRole.toObject();
   delete userObj.password;
 
   return userObj;
@@ -107,7 +112,7 @@ export const getUsers = async (query, id) => {
   // 📦 Fetch Data
   // =====================
   const users = await User.find(filter)
-  .select("-password -refreshToken -tokenVersion")
+    .select("-password -refreshToken -tokenVersion")
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: -1 }) // latest first

@@ -64,4 +64,35 @@ router.get(
   authController.getCurrentUser
 );
 
+// FORGOT PASSWORD (public endpoint)
+router.post(
+  "/forgot-password",
+  withActivityLog(authController.forgotPassword, (req, result, err) => ({
+    action: "FORGOT_PASSWORD",
+    resource: "AUTH",
+    description: err
+      ? `Failed password reset request`
+      : `Password reset requested`,
+    metadata: {
+      email: req.body?.email,
+      ip: req.ip,
+    },
+  }))
+);
+
+// RESET PASSWORD (public endpoint)
+router.post(
+  "/reset-password",
+  withActivityLog(authController.resetPassword, (req, result, err) => ({
+    action: "RESET_PASSWORD",
+    resource: "AUTH",
+    description: err
+      ? `Failed password reset`
+      : `Password reset completed`,
+    metadata: {
+      ip: req.ip,
+    },
+  }))
+);
+
 module.exports = router;
