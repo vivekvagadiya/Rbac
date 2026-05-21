@@ -6,10 +6,9 @@ import ApiError, { NotFoundError, ValidationError } from "../utils/ApiError.js";
  * GET PRODUCTS (Pagination)
  */
 
-export const getProducts = async (query,user) => {
+export const getProducts = async (query, user) => {
   let { page = 1, limit = 10, search, isActive, category } = query;
-  console.log('user',user);
-  
+  console.log("user", user);
 
   page = Math.max(1, parseInt(page) || 1);
   limit = Math.min(50, Math.max(1, parseInt(limit) || 10));
@@ -21,7 +20,13 @@ export const getProducts = async (query,user) => {
   //  Search
   if (search?.trim()) {
     const regex = new RegExp(search.trim(), "i");
-    filter.$or = [{ name: regex }, { description: regex }, { _id: regex }];
+    filter.$or = [{ name: regex }, { description: regex }];
+
+    if (mongoose.Types.ObjectId.isValid(search.trim())) {
+      filter.$or.push({
+        _id: new mongoose.Types.ObjectId(search.trim()),
+      });
+    }
   }
 
   //  Category
@@ -29,8 +34,8 @@ export const getProducts = async (query,user) => {
     filter.category = category;
   }
 
-  if(user.role.name==='user'){
-    filter.createdBy=user._id;
+  if (user.role.name === "user") {
+    filter.createdBy = user._id;
   }
 
   //  Status (BOOLEAN ONLY)
@@ -95,7 +100,7 @@ export const updateProduct = async (id, data, userId) => {
       },
     },
     {
-      returnDocument: 'after',
+      returnDocument: "after",
       runValidators: true,
     },
   ).lean();

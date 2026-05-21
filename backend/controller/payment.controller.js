@@ -202,6 +202,21 @@ export const verifyPaymentSession = async (req, res) => {
       });
     }
 
+    // Update order payment status if payment is completed
+    if (session.payment_status === 'paid' && order.paymentStatus !== 'PAID') {
+      await Order.findByIdAndUpdate(order._id, {
+        status: 'confirmed',
+        paymentStatus: 'PAID',
+        updatedBy: null // System update
+      });
+      
+      // Update the order object with new status
+      order.status = 'confirmed';
+      order.paymentStatus = 'PAID';
+      
+      console.log(`Payment verified and order ${order._id} updated to PAID status`);
+    }
+
     res.status(200).json({
       success: true,
       data: {
