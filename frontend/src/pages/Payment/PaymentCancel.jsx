@@ -1,9 +1,44 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { paymentAPI } from '../../api/payment.api.js';
 import './PaymentCancel.css';
 
 const PaymentCancel = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [cancelled, setCancelled] = useState(false);
+  const [error, setError] = useState('');
+
+  const sessionId = searchParams.get('session_id');
+
+  useEffect(() => {
+    const handlePaymentCancellation = async () => {
+      if (!sessionId) {
+        setError('No payment session found');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await paymentAPI.cancelPaymentSession(sessionId);
+        
+        if (response.success) {
+          setCancelled(response.data.isCancelled);
+          console.log('Payment cancellation processed:', response.data);
+        } else {
+          setError('Failed to process payment cancellation');
+        }
+      } catch (error) {
+        console.error('Error cancelling payment:', error);
+        setError(error.message || 'Failed to cancel payment');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    handlePaymentCancellation();
+  }, [sessionId]);
 
   const handleTryAgain = () => {
     navigate('/payment');
@@ -18,6 +53,17 @@ const PaymentCancel = () => {
     window.location.href = 'mailto:support@yourcompany.com';
   };
 
+  if (loading) {
+    return (
+      <div className="payment-cancel-container">
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Processing cancellation...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="payment-cancel-container">
       <div className="cancel-content">
@@ -31,6 +77,19 @@ const PaymentCancel = () => {
         <p className="cancel-message">
           Your payment was cancelled. No charges were made to your account.
         </p>
+        
+        {cancelled && (
+          <div className="cancellation-success">
+            <p>✅ Your order has been cancelled and stock has been restored.</p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="cancellation-error">
+            <p>⚠️ {error}</p>
+            <p>Your order may still be pending. Please check your orders or contact support.</p>
+          </div>
+        )}
         
         <div className="cancel-info">
           <h2>What happened?</h2>

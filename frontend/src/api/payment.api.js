@@ -13,6 +13,18 @@ export const paymentAPI = {
     }
   },
 
+  // Cancel payment session
+  cancelPaymentSession: async (sessionId) => {
+    try {
+      const response = await api.get(
+        endpoints.payment.cancel.replace(":sessionId", sessionId),
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   // Verify payment session
   verifyPaymentSession: async (sessionId) => {
     try {

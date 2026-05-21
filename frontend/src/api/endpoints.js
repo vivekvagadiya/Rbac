@@ -44,6 +44,7 @@ export const endpoints = {
   },
   payment:{
     checkout:`${baseUrl}/payments/create-checkout-session`,
+    cancel:`${baseUrl}/payments/cancel-session/:sessionId`,
     verify:`${baseUrl}/payments/verify-session/:sessionId`
   }
 };

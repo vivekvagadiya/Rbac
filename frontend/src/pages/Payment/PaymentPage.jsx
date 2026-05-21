@@ -167,9 +167,11 @@ const PaymentPage = () => {
       }));
 
       const response = await paymentAPI.createCheckoutSession(items);
+      console.log('response',response);
+      
 
-      if (response.success && response.url) {
-        window.location.href = response.url;
+      if (response.success && response?.data.url) {
+        window.location.href = response?.data.url;
       } else {
         setError("Failed to create payment session");
       }
