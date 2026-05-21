@@ -8,6 +8,23 @@ export const createCheckoutSession = async (req, res) => {
   try {
     const { items } = req.body;
 
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Items array is required'
+      });
+    }
+
+    // Validate each item
+    for (const item of items) {
+      if (!item.product || !item.name || !item.price || !item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: 'Each item must contain product, name, price, and quantity'
+        });
+      }
+    }
+
     const result = await PaymentService.createCheckoutSession(items, req.user._id);
 
     if (result.success) {
@@ -78,6 +95,119 @@ export const handleWebhook = async (req, res) => {
     });
   }
 };
+
+async function handleSuccessfulPayment(session) {
+  try {
+    const orderId = session.metadata.orderId;
+    
+    // Update order status
+    await Order.findByIdAndUpdate(orderId, {
+      status: 'confirmed',
+      paymentStatus: 'PAID',
+      updatedBy: null // System update
+    });
+
+    console.log(`Payment successful for order ${orderId}`);
+  } catch (error) {
+    console.error('Error handling successful payment:', error);
+  }
+}
+
+async function handleCancelledPayment(session) {
+  try {
+    const orderId = session.metadata.orderId;
+    
+    // Get order details to restore stock
+    const order = await Order.findById(orderId);
+    
+    if (order) {
+      // Restore stock for cancelled payment
+      await Promise.all(
+        order.products.map((item) =>
+          Product.updateOne(
+            { _id: item.product },
+            { $inc: { stock: item.quantity } },
+          ),
+        ),
+      );
+      console.log(`Stock restored for cancelled payment order ${orderId}`);
+    }
+    
+    // Update order status
+    await Order.findByIdAndUpdate(orderId, {
+      status: 'cancelled',
+      paymentStatus: 'FAILED',
+      updatedBy: null // System update
+    });
+
+    console.log(`Payment cancelled for order ${orderId}`);
+  } catch (error) {
+    console.error('Error handling cancelled payment:', error);
+  }
+}
+
+async function handleExpiredSession(session) {
+  try {
+    const orderId = session.metadata.orderId;
+    
+    // Get order details to restore stock
+    const order = await Order.findById(orderId);
+    
+    if (order) {
+      // Restore stock for expired payment
+      await Promise.all(
+        order.products.map((item) =>
+          Product.updateOne(
+            { _id: item.product },
+            { $inc: { stock: item.quantity } },
+          ),
+        ),
+      );
+      console.log(`Stock restored for expired payment order ${orderId}`);
+    }
+    
+    // Update order status
+    await Order.findByIdAndUpdate(orderId, {
+      status: 'cancelled',
+      paymentStatus: 'FAILED',
+      updatedBy: null // System update
+    });
+
+    console.log(`Payment expired for order ${orderId}`);
+  } catch (error) {
+    console.error('Error handling expired session:', error);
+  }
+}
+
+async function handleFailedPayment(paymentIntent) {
+  try {
+    // Find order by stripe session ID
+    const order = await Order.findOne({ stripeSessionId: paymentIntent.id });
+    
+    if (order) {
+      // Restore stock for failed payment
+      await Promise.all(
+        order.products.map((item) =>
+          Product.updateOne(
+            { _id: item.product },
+            { $inc: { stock: item.quantity } },
+          ),
+        ),
+      );
+      console.log(`Stock restored for failed payment order ${order._id}`);
+      
+      await Order.findByIdAndUpdate(order._id, {
+        status: 'cancelled',
+        paymentStatus: 'FAILED',
+        updatedBy: null // System update
+      });
+
+      console.log(`Payment failed for order ${order._id}`);
+    }
+  } catch (error) {
+    console.error('Error handling failed payment:', error);
+  }
+}
 
 /**
  * Cancel payment session (frontend-facing, no inventory changes)
@@ -150,84 +280,6 @@ export const verifyPaymentSession = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to verify payment session'
-    });
-  }
-};
-
-/**
- * Get payment status for an order
- */
-export const getOrderPaymentStatus = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-
-    if (!orderId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Order ID is required'
-      });
-    }
-
-    const result = await PaymentService.getOrderPaymentStatus(orderId);
-
-    if (result.success) {
-      res.status(200).json({
-        success: true,
-        data: result.data
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: result.error
-      });
-    }
-
-  } catch (error) {
-    console.error('Error in getOrderPaymentStatus:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to get order payment status'
-    });
-  }
-};
-
-/**
- * Create refund for a payment
- */
-export const createRefund = async (req, res) => {
-  try {
-    const { orderId, amount, reason } = req.body;
-
-    if (!orderId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Order ID is required'
-      });
-    }
-
-    const result = await PaymentService.createRefund(
-      orderId, 
-      amount, 
-      reason || 'Customer requested refund'
-    );
-
-    if (result.success) {
-      res.status(200).json({
-        success: true,
-        data: result.data
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: result.error
-      });
-    }
-
-  } catch (error) {
-    console.error('Error in createRefund:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to create refund'
     });
   }
 };

@@ -6,7 +6,7 @@ const http = require("http");
 const mongoose = require("mongoose");
 
 test("Backend startup test", async () => {
-  const PORT = 5001;
+  const PORT = process.env.PORT;
 
   const app = require("../app");
 

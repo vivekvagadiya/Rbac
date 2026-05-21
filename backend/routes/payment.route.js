@@ -20,6 +20,13 @@ router.post(
   paymentController.handleWebhook
 );
 
+// CANCEL PAYMENT SESSION
+router.get(
+  "/cancel-session/:sessionId",
+  authenticate,
+  paymentController.cancelPaymentSession
+);
+
 // VERIFY PAYMENT SESSION
 router.get(
   "/verify-session/:sessionId",

@@ -35,8 +35,10 @@ export const createOrder = async (data, userId) => {
   const orderItems = products.map((item) => {
     const prod = productMap.get(item.product.toString());
 
-    if (item.quantity > prod.stock) {
-      throw new ValidationError(`Insufficient stock for product ${prod.name}`);
+    // Note: Stock validation is now handled in PaymentService
+    // This is just a basic validation for order creation
+    if (item.quantity <= 0) {
+      throw new ValidationError(`Invalid quantity for product ${prod.name}`);
     }
     totalAmount += prod.price * item.quantity;
 
@@ -47,21 +49,18 @@ export const createOrder = async (data, userId) => {
     };
   });
 
+  // Create order without stock deduction (handled by PaymentService)
   const order = await Order.create({
     user: userId,
     products: orderItems,
     totalAmount,
     createdBy: userId,
     updatedBy: userId,
+    metadata: {
+      source: 'manual_order',
+      itemCount: products.length
+    }
   });
-  await Promise.all(
-    orderItems.map((item) =>
-      Product.updateOne(
-        { _id: item.product },
-        { $inc: { stock: -item.quantity } },
-      ),
-    ),
-  );
 
   return order;
 };

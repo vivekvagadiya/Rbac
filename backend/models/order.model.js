@@ -34,6 +34,7 @@ const orderSchema = new mongoose.Schema(
       min: 0,
     },
 
+    // Order lifecycle states
     status: {
       type: String,
       enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
@@ -41,11 +42,62 @@ const orderSchema = new mongoose.Schema(
       index: true,
     },
 
+    // Payment lifecycle states
+    paymentStatus: {
+      type: String,
+      enum: ["PENDING", "PAID", "FAILED", "REFUNDED"],
+      default: "PENDING",
+      index: true,
+    },
+
+    // Stripe integration fields
+    stripeSessionId: {
+      type: String,
+      index: true,
+      sparse: true, // Allows null values for non-stripe orders
+    },
+    
+    stripePaymentIntentId: {
+      type: String,
+      index: true,
+      sparse: true,
+    },
+
+    // Stock management fields
+    stockRestored: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    
+    stockRestoredAt: {
+      type: Date,
+    },
+    
+    stockRestoredReason: {
+      type: String,
+    },
+
+    // Refund tracking
     isRefunded: {
       type: Boolean,
       default: false,
     },
+    
+    refundAmount: {
+      type: Number,
+      min: 0,
+    },
+    
+    refundReason: {
+      type: String,
+    },
+    
+    refundId: {
+      type: String, // Stripe refund ID
+    },
 
+    // Audit fields
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -55,12 +107,27 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    paymentStatus: {
-      type: String,
-      enum: ["PENDING", "PAID", "FAILED"],
-      default: "PENDING",
+
+    // Webhook processing
+    webhookProcessed: {
+      type: Boolean,
+      default: false,
     },
-    stripeSessionId: String,
+    
+    webhookProcessedAt: {
+      type: Date,
+    },
+    
+    lastWebhookEvent: {
+      type: String,
+    },
+
+    // Metadata for tracking
+    metadata: {
+      type: Map,
+      of: String,
+      default: new Map(),
+    },
   },
   {
     timestamps: true,
