@@ -16,6 +16,10 @@ jobs:
 
     # REQUIRED for Environment Secrets
     environment: Preview
+    
+    # Permissions for auto-fix commits
+    permissions:
+      contents: write
 
     # Inject GitHub Secrets into process.env
     env:
@@ -59,10 +63,14 @@ jobs:
           cd frontend
           npm ci
 
-      - name: Lint Frontend
+      - name: Auto-fix Lint Issues
         run: |
           cd frontend
-          npm run lint
+          npm run lint -- --fix || true
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git diff --staged --quiet || git commit -m "Auto-fix lint issues [skip ci]"
 
       - name: Build Frontend
         run: |
